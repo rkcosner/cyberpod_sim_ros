@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+
+	<node name="rviz_safety" pkg="rviz" type="rviz" args="-d $(find cyberpod_sim_ros)/rviz/config_safety_filter.rviz" required="true" />
+	
+	<node name="rviz_planner" pkg="rviz" type="rviz" args="-d $(find cyberpod_sim_ros)/rviz/config_planning.rviz" required="true" />
+
+</launch>
+
