@@ -8,10 +8,11 @@
 #include <vector>
 #include <map>
 #include <functional>
+#include <signal.h>
 
-static const uint32_t STATE_LENGTH = 17;
-static const uint32_t INPUT_LENGTH = 4;
-static const uint32_t CMD_LENGTH = 4;
+static const uint32_t STATE_LENGTH = 7;
+static const uint32_t INPUT_LENGTH = 2;
+static const uint32_t CMD_LENGTH = 2;
 
 inline void quat2eulZYX(const Eigen::Quaterniond &q,
                               Eigen::Vector3d &eul)

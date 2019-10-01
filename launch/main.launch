@@ -1,22 +1,16 @@
 <?xml version="1.0"?>
 <launch>
-	<arg name="teleop" default="planner" />
-   <arg name="octo_res" default="0.3"/>
-   <arg name="filter" default="on"/>
-
-   <include file="$(find cyberpod_sim_ros)/launch/sim.launch"/>
+	<arg name="teleop" default="joy" />
+   <arg name="filter" default="off"/>
 
    <include file="$(find cyberpod_sim_ros)/launch/manual_teleop.launch" if="$(eval teleop == 'joy')"/>
-
-   <node name="rviz_safety" pkg="rviz" type="rviz" args="-d $(find cyberpod_sim_ros)/rviz/config_safety_filter.rviz" if="$(eval teleop == 'joy')"/>
-
-   <node name="rviz_planner" pkg="rviz" type="rviz" args="-d $(find cyberpod_sim_ros)/rviz/config_planning.rviz" if="$(eval teleop == 'planner')"/>
 
 	<group ns="cyberpod_sim_ros">
 		
 		<node name="integrator" pkg="cyberpod_sim_ros" type="integrator_node" output="screen">
-			<param name="dt" value="0.001" />  
-			<rosparam param="IC">[0.0, 0.0, 0.5, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]</rosparam>
+			<param name="dt" value="0.001" />
+			<param name="umax" value="20.0" />
+			<rosparam param="IC">[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]</rosparam>
 		</node>
 
 		<node name="safety_filter" pkg="cyberpod_sim_ros" type="safety_filter_node" output="screen">
@@ -24,73 +18,12 @@
 			<param name="pass_through" value="1" if="$(eval filter == 'off')"/>
 			<param name="integration_dt" value="0.01"/>
 			<param name="backup_Tmax" value="1.3"/>
-			<param name="safety_buffer" value="0.2"/>
-			<param name="safety_buffer_soft" value="0.2"/>
-			<param name="terminal_vel_max" value="0.05"/>
-			<param name="tau_backup" value="0.1"/>
-			<param name="smoothing_tau_obstacle" value="0.2"/>
-			<param name="smoothing_tau_vDes" value="0.1"/>
-			<param name="cone_radius" value="2.0"/>
-			<param name="cone_latitude" value="0.50614548308"/>
-			<param name="cone_longitude" value="0.77667151714"/>
-
-			<param name="hoverThrust" value="0.52" />	
-			<param name="KiVz" value="5.0" />	
-			<param name="KpVz" value="1.0" />
-			<param name="KpVxy" value="0.7" />
-			<param name="KpAttitude" value="10.0" />	
-			<param name="KdAttitude" value="1.0" />
-			<param name="KpOmegaz" value="2.0" />
-			<param name="maxInclination" value="30.0" />
 		</node>
 
 		<node name="controller" pkg="cyberpod_sim_ros" type="controller_node" output="screen">
-			<param name="hoverThrust" value="0.52" />	
-			<param name="KiVz" value="5.0" />	
-			<param name="KpVz" value="1.0" />
-			<param name="KpVxy" value="0.7" />
-			<param name="KpAttitude" value="10.0" />	
-			<param name="KdAttitude" value="1.0" />
-			<param name="KiOmegaz" value="1.0" />	
-			<param name="KpOmegaz" value="2.0" />
-			<param name="maxInclination" value="30.0" />
+			<param name="offset_angle" value="0.1383244254"/>
+			<rosparam param="gains">[44.7214, 0., 0., 44.6528, 0., 150.1612, 37.6492]</rosparam>
 		</node>
-
-		<node pkg="octomap_server" type="octomap_server_node" name="octomap_server" >
-			<param name="resolution" value="$(arg octo_res)"/>
-
-			<param name="frame_id" type="string" value="/world"/>
-
-			<param name="sensor_model/max_range" value="15.0"/>
- 			<param name="sensor_model/hit" value="0.9"/>
-			<param name="sensor_model/miss" value="0.4"/> 
-			<param name="sensor_model/min" value="0.12"/> 
-			<param name="sensor_model/max" value="1"/> 
-
-			<param name="base_frame_id " value="/uav/base_link" type="str"/>
-
-			<remap from="cloud_in" to="/velodyne_points"/>
-		</node>
-
-		<node name="planner" pkg="cyberpod_sim_ros" type="planner_node" output="screen" if="$(eval teleop == 'planner')">
-			<rosparam param="bounds">[-500, -310, 0, 1, 500, 1]</rosparam> 
-			<param name="planrate" value="20" />			
-			<param name="velocity" value="5.0" />
-
-			<param name="frontier_unkn" value="2" /> 
-			<param name="frontier_free" value="2" /> 
-			<param name="frontier_occu" value="1" /> 
-
-			<param name="cluster_minsize" value="5" /> 
-			<param name="cluster_searchdist" value="50" /> 
-
-			<param name="trajectory_nnodes" value="30" /> 
-			<param name="trajectory_average" value="25" /> 
-			<param name="trajectory_lookahead" value="1.5" />
-			<param name="trajectory_target_distance" value="1.5" />		
-		</node>
-		
-		<node name="gazebo_interface" pkg="cyberpod_sim_ros" type="gazebo_interface" output="screen"/>
 
 	</group>
 </launch>

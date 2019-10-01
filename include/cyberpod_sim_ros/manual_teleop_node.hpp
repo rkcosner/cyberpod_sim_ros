@@ -20,16 +20,12 @@ enum class STATUS : uint8_t
   RUNNING = 1
 };
 
-std::map<char, Eigen::Vector4d> moveBindings
+std::map<char, Eigen::Vector2d> moveBindings
 {
-  {'w', {1, 0, 0, 0}},
-  {'s', {-1, 0, 0, 0}},
-  {'a', {0, 1, 0, 0}},
-  {'d', {0, -1, 0, 0}},
-  {'q', {0, 0, 0, 1}},
-  {'e', {0, 0, 0, -1}},
-  {' ', {0, 0, 1, 0}},
-  {'c', {0, 0, -1, 0}}
+  {'w', { 1., 0.}},
+  {'s', {-1., 0.}},
+  {'a', { 0., 1.}},
+  {'d', { 0.,-1.}},
 };
 
 #endif

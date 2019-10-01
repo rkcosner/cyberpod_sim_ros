@@ -9,11 +9,12 @@ ros::Publisher pub_cmd_;
 cyberpod_sim_ros::cmd cmd_;
 
 uint32_t iter_;
-double hz_, vxy_, vz_, vyaw_, boost_;
+double hz_;
+double vx_, vyaw_, boost_;
 std::string input_dev_;
 bool run_;
 double smoothing_dt_;
-Vector4d cmdVec_(0.0,0.0,0.0,0.0);
+Vector2d cmdVec_(0.0,0.0);
 
 void my_handler(int sig)
 {
@@ -33,7 +34,7 @@ int main (int argc, char *argv[])
 	// Initialize some variables
 	iter_ = 0;
 	run_ = true;
-	cmd_.vDes.fill(0.0);
+	cmd_.vDes.resize(2,0.0);
 	int ch;
 	struct termios oldt;
 	struct termios newt;
@@ -45,16 +46,15 @@ int main (int argc, char *argv[])
 	tcsetattr(fileno(stdin), TCSANOW, &newt);
 
 	// Init pubs, subs and srvs
-	pub_cmd_ = nh_->advertise<cyberpod_sim_ros::cmd>("uav_cmd_des", 1);
+	pub_cmd_ = nh_->advertise<cyberpod_sim_ros::cmd>("cmd", 1);
 
 	// Retreive params
 	nhParams_->param<std::string>("input_dev",input_dev_,"/dev/input/event0");
-	nhParams_->param<double>("hz",hz_,100.0);
-	nhParams_->param<double>("vxy",vxy_,1.0);
-	nhParams_->param<double>("vz",vz_,1.0);
+	nhParams_->param<double>("vx",vx_,1.0);
 	nhParams_->param<double>("vyaw",vyaw_,1.0);
 	nhParams_->param<double>("boost",boost_,2.0);
 	nhParams_->param<double>("smoothing_dt",smoothing_dt_,0.0);
+	nhParams_->param<double>("hz",hz_,100.0);
 
 	//Initialize keyboard observer
 	cKeyboard kb(input_dev_.c_str());
@@ -66,9 +66,9 @@ int main (int argc, char *argv[])
 	// Display node info
 	ROS_INFO("Manual teleop node successfuly started with:");
 	ROS_INFO("___input_dev=%s",input_dev_.c_str());	
+
 	ROS_INFO("___hz=%.0f",hz_);
-	ROS_INFO("___vxy=%.2f",vxy_);
-	ROS_INFO("___vz=%.2f",vz_);
+	ROS_INFO("___vx=%.2f",vx_);
 	ROS_INFO("___vyaw=%.2f",vyaw_);
 	ROS_INFO("___boost=%.2f",boost_);
 	ROS_INFO("___smoothing_dt=%.3f",smoothing_dt_);
@@ -83,40 +83,29 @@ int main (int argc, char *argv[])
 	while(run_)
 	{
 		//Get latest parameters
-		nhParams_->param<double>("vxy",vxy_,1.0);
-		nhParams_->param<double>("vz",vz_,1.0);
+		nhParams_->param<double>("vx",vx_,1.0);
 		nhParams_->param<double>("vyaw",vyaw_,1.0);
+		nhParams_->param<double>("boost",boost_,2.0);
+		nhParams_->param<double>("smoothing_dt",smoothing_dt_,0.0);
 
 		// Compute command
-		Vector4d cmdVec(0.0,0.0,0.0,0.0);
+		Vector2d cmdVec(0.0,0.0);
 
 		double boost = 1.0;
 		if(kb.getKeyState(KEY_LEFTSHIFT))
 			boost = boost_;
 
 		if(kb.getKeyState(KEY_W))
-			cmdVec+=boost*vxy_*moveBindings['w'];
+			cmdVec+=boost*vx_*moveBindings['w'];
 
 		if(kb.getKeyState(KEY_S))
-			cmdVec+=boost*vxy_*moveBindings['s'];
+			cmdVec+=boost*vx_*moveBindings['s'];
 
 		if(kb.getKeyState(KEY_A))
-			cmdVec+=boost*vxy_*moveBindings['a'];
+			cmdVec+=boost*vyaw_*moveBindings['a'];
 
 		if(kb.getKeyState(KEY_D))
-			cmdVec+=boost*vxy_*moveBindings['d'];
-
-		if(kb.getKeyState(KEY_Q))
-			cmdVec+=boost*vyaw_*moveBindings['q'];
-
-		if(kb.getKeyState(KEY_E))
-			cmdVec+=boost*vyaw_*moveBindings['e'];
-
-		if(kb.getKeyState(KEY_SPACE))
-			cmdVec+=boost*vz_*moveBindings[' '];
-
-		if(kb.getKeyState(KEY_LEFTCTRL))
-			cmdVec+=boost*vz_*moveBindings['c'];
+			cmdVec+=boost*vyaw_*moveBindings['d'];
 
 		cmd_.header.seq = iter_;
 		cmd_.header.stamp = ros::Time::now();
@@ -131,8 +120,6 @@ int main (int argc, char *argv[])
 
 		cmd_.vDes[0] = cmdVec_(0);
 		cmd_.vDes[1] = cmdVec_(1);
-		cmd_.vDes[2] = cmdVec_(2);
-		cmd_.vDes[3] = cmdVec_(3);
 		iter_++;
 
 		// Publish cmd message
@@ -145,8 +132,6 @@ int main (int argc, char *argv[])
 	// Send last command as 0
 	cmd_.vDes[0] = 0.0;
 	cmd_.vDes[1] = 0.0;
-	cmd_.vDes[2] = 0.0;
-	cmd_.vDes[3] = 0.0;
 
 	pub_cmd_.publish(cmd_);	
 

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(cyberpod_sim_ros)
 
-## Compile as C++11, supported in ROS Kinetic and newer
+## Compile as C++17, supported in ROS Kinetic and newer
 add_compile_options(-std=c++17)
 
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -28,6 +28,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED)
 find_package(Eigen3 3.3 REQUIRED CONFIG)
+find_package(asif++ REQUIRED CONFIG)
 find_package(Threads REQUIRED)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 
@@ -80,8 +81,7 @@ add_executable(manual_teleop_node src/manual_teleop_node.cpp src/keyboard.cpp)
 add_dependencies(integrator_node cyberpod_sim_ros_generate_messages_cpp)
 add_dependencies(controller_node cyberpod_sim_ros_generate_messages_cpp)
 add_dependencies(safety_filter_node cyberpod_sim_ros_generate_messages_cpp)
-add_dependencies(manual_teleop_node cyberpod_sim_ros_generate_messages_cpp
-	                                 Threads::Threads)
+add_dependencies(manual_teleop_node cyberpod_sim_ros_generate_messages_cpp)
 
 
 target_link_libraries(integrator_node
@@ -97,9 +97,11 @@ target_link_libraries(controller_node
 target_link_libraries(safety_filter_node
                       ${catkin_LIBRARIES} 
                       Eigen3::Eigen
+                       asif++::asif++
 )
 
 target_link_libraries(manual_teleop_node
                       ${catkin_LIBRARIES} 
-                      Eigen3::Eigen                 
+                      Eigen3::Eigen
+                      Threads::Threads               
 )

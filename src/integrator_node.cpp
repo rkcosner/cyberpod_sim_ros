@@ -1,92 +1,57 @@
 #include "cyberpod_sim_ros/integrator_node.hpp" 
 
 
+using namespace Eigen;
+
 ros::NodeHandle *nh_;
 ros::NodeHandle *nhParams_;
 ros::ServiceServer srv_ui_;
 ros::Subscriber sub_input_;
 ros::Publisher pub_state_;
-ros::Publisher pub_stateRaw_;
 
 double t_;
 double dt_;
+double umax_;
 uint32_t iter_;
 STATUS status_;
 stepper_t odeStepper_;
 state_t odeState_;
 cyberpod_sim_ros::state stateCurrent_;
 cyberpod_sim_ros::input inputCurrent_;
-state_t initialConditions_{0.0,0.0,1.0,
-                           1.0,0.0,0.0,0.0,
-                           0.0,0.0,0.0,
-                           0.0,0.0,0.0,
-                           0.0,0.0,0.0,0.0};
+state_t initialConditions_(STATE_LENGTH,0.0);
 
 void resetOdeState(void)
 {
 	odeState_ = initialConditions_;
-	inputCurrent_.input[0] = 0.0;
-	inputCurrent_.input[1] = 0.0;
-	inputCurrent_.input[2] = 0.0;
-	inputCurrent_.input[3] = 0.0;
+	inputCurrent_.inputVec[0] = 0.0;
+	inputCurrent_.inputVec[1] = 0.0;
 }
 
 void dynamicsCL(const state_t &x, state_t &xDot, const double t)
 {
 	xDot = x;
-	double inputSaturated[INPUT_LENGTH];
-	for(uint32_t i = 0; i<INPUT_LENGTH; i++)
-	{
-		if(inputCurrent_.input[i]>1.0)
-			inputSaturated[i] = 1.0;
-		else if(inputCurrent_.input[i]<0.0)
-			inputSaturated[i] = 0.0;
-		else
-			inputSaturated[i] = inputCurrent_.input[i];
-	}
-   uavDynamics(x.data(),inputSaturated,xDot.data(),t);
+   dynamics(t,x.data(),inputCurrent_.inputVec.data(),xDot.data());
 }
 
 void inputCallback(const cyberpod_sim_ros::input::ConstPtr msg)
 {
 	inputCurrent_ = *msg;
+	saturateInPlace(inputCurrent_.inputVec.data(),-umax_,umax_,INPUT_LENGTH);
 }
 
 void updateStateCurrent(void)
 {
-	//normalize quaternion
-	Quaterniond q(odeState_[3],odeState_[4],odeState_[5],odeState_[6]);
-	q.normalize();
-
 	stateCurrent_.status = static_cast<uint8_t>(status_);
 	stateCurrent_.time = t_;
 	stateCurrent_.x = odeState_[0];
 	stateCurrent_.y = odeState_[1];
-	stateCurrent_.z = odeState_[2];
-	stateCurrent_.qw = q.w();
-	stateCurrent_.qx = q.x();
-	stateCurrent_.qy = q.y();
-	stateCurrent_.qz = q.z();
-	stateCurrent_.vx = odeState_[7];
-	stateCurrent_.vy = odeState_[8];
-	stateCurrent_.vz = odeState_[9];
-	stateCurrent_.omegax = odeState_[10];
-	stateCurrent_.omegay = odeState_[11];
-	stateCurrent_.omegaz = odeState_[12];
-	stateCurrent_.omega1 = odeState_[13];
-	stateCurrent_.omega2 = odeState_[14];
-	stateCurrent_.omega3 = odeState_[15];
-	stateCurrent_.omega4 = odeState_[16];
+	stateCurrent_.theta = odeState_[2];
+	stateCurrent_.v = odeState_[3];
+	stateCurrent_.thetaDot = odeState_[4];
+	stateCurrent_.psi = odeState_[5];
+	stateCurrent_.psiDot = odeState_[6];
+	std::copy(odeState_.begin(),odeState_.end(),stateCurrent_.stateVec.begin());
 
-	Matrix3d rotBody2World;
-	quat2rotm(q,rotBody2World);
-
-	Vector3d v(odeState_[7],odeState_[8],odeState_[9]);
-	Vector3d vb = rotBody2World.transpose()*v;
-
-	stateCurrent_.vbx = vb(0);
-	stateCurrent_.vby = vb(1);
-	stateCurrent_.vbz = vb(2);
 }
 
 void sendStateCurrent(void)
@@ -96,33 +61,33 @@ void sendStateCurrent(void)
 	stateCurrent_.header.frame_id = std::to_string(inputCurrent_.header.seq);
 	
 	pub_state_.publish(stateCurrent_);
-
-	std_msgs::Float64MultiArray stateRaw;
-	stateRaw.data = odeState_;
-	pub_stateRaw_.publish(stateRaw);
 }
 
 void sendTransformCurrent(void)
 {
-	tf::TransformBroadcaster uav_odom_broadcaster;
-	geometry_msgs::TransformStamped uav_odom_trans;
-	uav_odom_trans.header.seq = iter_;
-	uav_odom_trans.header.stamp = ros::Time::now();
-	uav_odom_trans.header.frame_id = "world";
-    uav_odom_trans.child_frame_id = "uav/base_link";
+	tf::TransformBroadcaster odom_broadcaster;
+	geometry_msgs::TransformStamped odom_trans;
+	odom_trans.header.seq = iter_;
+	odom_trans.header.stamp = ros::Time::now();
+	odom_trans.header.frame_id = "world";
+	odom_trans.child_frame_id = "cyberpod/base_link";
 
-    uav_odom_trans.transform.translation.x = stateCurrent_.x;
-    uav_odom_trans.transform.translation.y = stateCurrent_.y;
-    uav_odom_trans.transform.translation.z = stateCurrent_.z;
+	odom_trans.transform.translation.x = stateCurrent_.x;
+	odom_trans.transform.translation.y = stateCurrent_.y;
+	odom_trans.transform.translation.z = 0.195;
 	
-	geometry_msgs::Quaternion uav_odom_quat;
-	uav_odom_quat.w = stateCurrent_.qw;
-	uav_odom_quat.x = stateCurrent_.qx;
-	uav_odom_quat.y = stateCurrent_.qy;
-	uav_odom_quat.z = stateCurrent_.qz;
-	uav_odom_trans.transform.rotation = uav_odom_quat;
+	Quaterniond cyberpod_q;
+	Vector3d cyberpod_eul(0.0,stateCurrent_.psi,stateCurrent_.theta);
+	eul2quatZYX(cyberpod_eul,cyberpod_q);
 
-	uav_odom_broadcaster.sendTransform(uav_odom_trans);
+	geometry_msgs::Quaternion odom_quat;
+	odom_quat.w = cyberpod_q.w();
+	odom_quat.x = cyberpod_q.x();
+	odom_quat.y = cyberpod_q.y();
+	odom_quat.z = cyberpod_q.z();
+	odom_trans.transform.rotation = odom_quat;
+
+	odom_broadcaster.sendTransform(odom_trans);
 }
 
 
@@ -216,28 +181,30 @@ int main (int argc, char *argv[])
 	nh_ = new ros::NodeHandle();
 
 	// Init pubs, subs and srvs
-	sub_input_ = nh_->subscribe<cyberpod_sim_ros::input>("uav_input", 1,inputCallback);
-	pub_state_ = nh_->advertise<cyberpod_sim_ros::state>("uav_state", 1);
-	pub_stateRaw_ = nh_->advertise<std_msgs::Float64MultiArray>("uav_state_raw", 10);
+	sub_input_ = nh_->subscribe<cyberpod_sim_ros::input>("input", 1,inputCallback);
+	pub_state_ = nh_->advertise<cyberpod_sim_ros::state>("state", 1);
 	srv_ui_ = nh_->advertiseService("integrator/ui", uiCallback);
 
 	// Retreive params
 	nhParams_->param<double>("dt",dt_,0.001);
+	nhParams_->param<double>("umax",umax_,20.);
 	nhParams_->param<state_t>("IC",initialConditions_,initialConditions_);
 
 	if(dt_<=0.0)
 	{
 		dt_ = 0.001;
-		ROS_WARN("dt must be strictly positive");
+		ROS_WARN("dt must be strictly positive. Will be set to %f",dt_);
 	}
+	if(umax_<=0.0)
+	{
+		umax_ = 20.;
+		ROS_WARN("dt must be strictly positive. Will be set to %f",umax_);
+	}
+	
 	if(initialConditions_.size()!=STATE_LENGTH)
 	{
-		initialConditions_ = state_t{0.0,0.0,1.0,
-		                             1.0,0.0,0.0,0.0,
-		                             0.0,0.0,0.0,
-		                             0.0,0.0,0.0,
-		                             0.0,0.0,0.0,0.0};
-		ROS_WARN("Initial conditions must be of length 17");
+		initialConditions_ = state_t(STATE_LENGTH,0.0);
+		ROS_WARN("Initial conditions must be of length %u",STATE_LENGTH);
 	}
 	// Initialize variables
 	t_ = 0.0;

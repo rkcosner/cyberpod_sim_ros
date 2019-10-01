@@ -1,3 +1,3 @@
 uint8 status
 Header header
-float64[4] input
+float64[2] inputVec

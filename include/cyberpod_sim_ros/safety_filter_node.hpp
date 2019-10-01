@@ -32,13 +32,4 @@ enum class STATUS : uint8_t
 	RUNNING = 1
 };
 
-const uint32_t nx_ = STATE_LENGTH;
-const uint32_t nu_ = INPUT_LENGTH;
-const uint32_t npSS_ = 4;
-const uint32_t npBS_ = 1;
-const uint32_t npBTSS_ = 4;
-
-const double lb_[nu_] = {-1.0,-1.0,-1.0,-1.0};
-const double ub_[nu_] = { 1.0, 1.0, 1.0, 1.0};
-
 #endif
