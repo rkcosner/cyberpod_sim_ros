@@ -16,7 +16,6 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include "cyberpod_sim_ros/common.hpp"
-#include "cyberpod_sim_ros/dynamics.hpp"
 
 #include <boost/numeric/odeint.hpp>
 #include <boost/numeric/odeint/iterator/n_step_iterator.hpp>
