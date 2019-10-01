@@ -1,3 +1,3 @@
 uint8 status
 Header header
-float64[] vDes
+float64[] cmd

@@ -34,7 +34,7 @@ int main (int argc, char *argv[])
 	// Initialize some variables
 	iter_ = 0;
 	run_ = true;
-	cmd_.vDes.resize(2,0.0);
+	cmd_.cmd.resize(2,0.0);
 	int ch;
 	struct termios oldt;
 	struct termios newt;
@@ -118,8 +118,8 @@ int main (int argc, char *argv[])
 		else
 			cmdVec_ = cmdVec;
 
-		cmd_.vDes[0] = cmdVec_(0);
-		cmd_.vDes[1] = cmdVec_(1);
+		cmd_.cmd[0] = cmdVec_(0);
+		cmd_.cmd[1] = cmdVec_(1);
 		iter_++;
 
 		// Publish cmd message
@@ -130,8 +130,8 @@ int main (int argc, char *argv[])
 	}
 
 	// Send last command as 0
-	cmd_.vDes[0] = 0.0;
-	cmd_.vDes[1] = 0.0;
+	cmd_.cmd[0] = 0.0;
+	cmd_.cmd[1] = 0.0;
 
 	pub_cmd_.publish(cmd_);	
 

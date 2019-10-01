@@ -94,6 +94,7 @@ int main(int argc, char *argv[])
 	iter_ = 0;
 	backTrajMsg_.header.frame_id = "/world";
 	backTrajMsg_.poses.reserve(integration_steps+1);
+	inputDes_.inputVec.fill(0.0);
 
 	// Display node info
 	ROS_INFO("Safety Filter node successfuly started with:");

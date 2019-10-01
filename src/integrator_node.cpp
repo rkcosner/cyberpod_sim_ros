@@ -65,7 +65,7 @@ void sendStateCurrent(void)
 
 void sendTransformCurrent(void)
 {
-	tf::TransformBroadcaster odom_broadcaster;
+	static tf::TransformBroadcaster odom_broadcaster;
 	geometry_msgs::TransformStamped odom_trans;
 	odom_trans.header.seq = iter_;
 	odom_trans.header.stamp = ros::Time::now();

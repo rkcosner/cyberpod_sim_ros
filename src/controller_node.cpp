@@ -31,9 +31,11 @@ void computeControlAction(void)
 	input_.header.frame_id = std::string("stateSeq=") + std::to_string(stateCurrent_.header.seq) + std::string(", cmdSeq=") + std::to_string(cmdCurrent_.header.seq);
 	input_.status = static_cast<uint8_t>(STATUS::RUNNING);
 
-	auto stateCurrentVecTmp = stateCurrentVec_;
-	stateCurrentVecTmp(5)-=offset_angle_;
-	const double u = gainsVec_.dot(stateCurrentVecTmp);
+	VectorXd stateDes(STATE_LENGTH);
+	stateDes(5)=offset_angle_;
+	stateDes(3)=cmdCurrent_.cmd[0];
+
+	const double u = gainsVec_.dot(stateCurrentVec_ - stateDes);
 
 	input_.inputVec[0] = u;
 	input_.inputVec[1] = u;
@@ -66,7 +68,7 @@ int main (int argc, char *argv[])
 
 	// Initialize variables
 	iter_ = 0;
-	cmdCurrent_.vDes.resize(2,0.0);
+	cmdCurrent_.cmd.resize(2,0.0);
 
 	// Init pubs, subs and srvs
 	sub_state_ = nh_->subscribe<cyberpod_sim_ros::state>("state", 1, controlCallback);

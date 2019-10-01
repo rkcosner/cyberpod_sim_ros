@@ -5,6 +5,8 @@
 
    <include file="$(find cyberpod_sim_ros)/launch/manual_teleop.launch" if="$(eval teleop == 'joy')"/>
 
+   <include file="$(find cyberpod_sim_ros)/launch/rviz.launch"/>
+
 	<group ns="cyberpod_sim_ros">
 		
 		<node name="integrator" pkg="cyberpod_sim_ros" type="integrator_node" output="screen">
