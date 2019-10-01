@@ -3,18 +3,20 @@
 
 #include "asif++.h"
 #include <Eigen/Dense>
+#include <algorithm>
 
 static const uint32_t nx = 4;
 static const uint32_t nu = 1;
-static const uint32_t npSS = 4;
+static const uint32_t npSS = 2;
 static const uint32_t npBTSS = 4;
 
 static const double lb[nu] = {-20.0};
 static const double ub[nu] = {20.0};
-static const double xBound[nx] = {3.0,3.0,M_PI/6,M_PI};
-static const double xBoundBack[nx] = {3.0,3.0,M_PI/6,M_PI};
+static const double xBound[npSS] = {3.0,M_PI/6.};
+static const double xBoundBackup[nx] = {1.,.5,M_PI/6,0.5};
+static const double centerBackup[nx] = {0.,0.,0.1383244254,0.};
 
-static const Eigen::VectorXd Kvec = 2.0*(Eigen::VectorXd(nx) << 44.7214, 44.6528, 150.1612, 37.6492).finished();
+static const Eigen::VectorXd Kvec = (Eigen::VectorXd(nx) << 44.7214, 44.6528, 150.1612, 37.6492).finished();
 
 static const double *K = Kvec.data();
 static const double Pv = 0.05;
@@ -44,11 +46,12 @@ void safetySet(const double x[nx], double h[npSS], double Dh[npSS*nx])
 	{
 		Dh[i] = 0.0;
 	}
-	for(uint32_t i = 0; i<nx; i++)
-	{
-		h[i] = (xBound[i]*xBound[i])-(x[i]*x[i]);
-		Dh[i*(nx+1)] = -2.0*x[i];
-	}
+
+	h[0] = 1-(x[0]*x[0])/(xBound[0]*xBound[0]);
+	h[1] = 1-(x[2]*x[2])/(xBound[1]*xBound[1]);
+
+	Dh[0] = -2.0*x[0]/(xBound[0]*xBound[0]);
+	Dh[5] = -2.0*x[2]/(xBound[1]*xBound[1]);
 }
 
 void backupSet(const double x[nx], double h[1], double Dh[nx], double DDh[nx*nx])
@@ -58,12 +61,12 @@ void backupSet(const double x[nx], double h[1], double Dh[nx], double DDh[nx*nx]
 		DDh[i] = 0.0;
 	}
 
-	h[0] = Pv*Pv;
+	h[0] = 1;
 	for(uint32_t i = 0; i<nx; i++)
 	{
-		h[0] -= (x[i]/xBound[i])*(x[i]/xBound[i]);
-		Dh[i] = -2.0*x[i]/(xBound[i]*xBound[i]);
-		DDh[i*(nx+1)] = -2.0/(xBound[i]*xBound[i]);
+		h[0] -= ((x[i]-centerBackup[i])/xBoundBackup[i])*((x[i]-centerBackup[i])/xBoundBackup[i]);
+		Dh[i] = -2.0*(x[i]-centerBackup[i])/(xBoundBackup[i]*xBoundBackup[i]);
+		DDh[i*(nx+1)] = -2.0/(xBoundBackup[i]*xBoundBackup[i]);
 	}
 }
 

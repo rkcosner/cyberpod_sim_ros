@@ -42,14 +42,20 @@ void filterInput(void)
 
 	filter_info_.asifReturnCode = asif->filter(xNow,uDesNow,uActNow,relax);
 
+	filter_info_.hBackupEnd = asif->hBackupEnd_;
+	filter_info_.BTorthoBS = asif->BTorthoBS_;
+	filter_info_.TTS = asif->TTS_;
+	filter_info_.hSafetyNow = asif->hSafetyNow_;
+	std::copy((*asif).backTraj_.back().second.begin(),(*asif).backTraj_.back().second.begin()+4,filter_info_.xBackupEnd.begin());
+
 	if(passThrough_==1)
 	{
 		std::copy(inputDes_.inputVec.begin(),inputDes_.inputVec.end(),inputAct_.inputVec.begin());
 	}
 	else
 	{
-		inputDes_.inputVec[0] = uActNow[0];
-		inputDes_.inputVec[1] = uActNow[0];
+		inputAct_.inputVec[0] = uActNow[0];
+		inputAct_.inputVec[1] = uActNow[0];
 	}
 
 	inputAct_.status = static_cast<uint8_t>(STATUS::RUNNING);
@@ -130,8 +136,8 @@ int main(int argc, char *argv[])
 
 	// Initialize asif
 	ASIF::ASIFimplicitTB::Options opts;
-	opts.backTrajHorizon = 3.0;
-	opts.backTrajDt = 0.01;
+	opts.backTrajHorizon = backup_Tmax_;
+	opts.backTrajDt = integration_dt_;
 	opts.relaxCost = 10;
 	opts.relaxSafeLb = 2.0;
 	opts.relaxTTS = 30.0;

@@ -19,7 +19,7 @@
 			<param name="pass_through" value="0" if="$(eval filter == 'on')"/>
 			<param name="pass_through" value="1" if="$(eval filter == 'off')"/>
 			<param name="integration_dt" value="0.005"/>
-			<param name="backup_Tmax" value="2"/>
+			<param name="backup_Tmax" value="3"/>
 		</node>
 
 		<node name="controller" pkg="cyberpod_sim_ros" type="controller_node" output="screen">
