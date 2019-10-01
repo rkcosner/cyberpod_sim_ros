@@ -58,7 +58,7 @@ void sendStateCurrent(void)
 {
 	stateCurrent_.header.seq = iter_;
 	stateCurrent_.header.stamp = ros::Time::now();
-	stateCurrent_.header.frame_id = std::to_string(inputCurrent_.header.seq);
+	stateCurrent_.header.frame_id = std::string("inputSeq=") + std::to_string(inputCurrent_.header.seq);
 	
 	pub_state_.publish(stateCurrent_);
 }

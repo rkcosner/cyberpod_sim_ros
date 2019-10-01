@@ -14,7 +14,6 @@ cyberpod_sim_ros::cmd cmdCurrent_;
 
 // Global variables
 uint32_t iter_;
-uint32_t iterState_;
 VectorXd gainsVec_(STATE_LENGTH);
 VectorXd stateCurrentVec_(STATE_LENGTH);
 double offset_angle_;
@@ -29,7 +28,7 @@ void computeControlAction(void)
 	iter_++;
 	input_.header.seq = iter_;
 	input_.header.stamp = ros::Time::now();
-	input_.header.frame_id = std::string("stateIter=") + std::to_string(iterState_);
+	input_.header.frame_id = std::string("stateSeq=") + std::to_string(stateCurrent_.header.seq) + std::string(", cmdSeq=") + std::to_string(cmdCurrent_.header.seq);
 	input_.status = static_cast<uint8_t>(STATUS::RUNNING);
 
 	auto stateCurrentVecTmp = stateCurrentVec_;
@@ -43,7 +42,6 @@ void computeControlAction(void)
 void controlCallback(const cyberpod_sim_ros::state::ConstPtr msg)
 {
 	stateCurrent_ = *msg;
-	iterState_ = stateCurrent_.header.seq;
 	for(uint32_t i=0; i<STATE_LENGTH; i++)
 		stateCurrentVec_(i) = stateCurrent_.stateVec[i];
 

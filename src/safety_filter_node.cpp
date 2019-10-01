@@ -17,8 +17,6 @@ cyberpod_sim_ros::filterInfo filter_info_;
 nav_msgs::Path backTrajMsg_;
 
 int32_t passThrough_;
-uint32_t iterInput_;
-uint32_t iterState_;
 uint32_t iter_;
 double integration_dt_;
 double backup_Tmax_;
@@ -31,7 +29,7 @@ void filterInput(void)
 	iter_++;
 	inputAct_.header.seq = iter_;
 	inputAct_.header.stamp = ros::Time::now();
-	inputAct_.header.frame_id = std::string("stateIter=") + std::to_string(iterState_) + std::string(", inputIter=") + std::to_string(iterInput_);
+	inputAct_.header.frame_id = std::string("stateSeq=") + std::to_string(stateCurrent_.header.seq) + std::string(", inputDesSeq=") + std::to_string(inputDes_.header.seq);
 	
 
 	if(passThrough_==1)
@@ -40,7 +38,7 @@ void filterInput(void)
 	}
 	else
 	{
-		
+
 	}
 
 	inputAct_.status = static_cast<uint8_t>(STATUS::RUNNING);
@@ -49,14 +47,12 @@ void filterInput(void)
 void inputCallback(const cyberpod_sim_ros::input::ConstPtr msg)
 {
 	inputDes_ = *msg;
-	iterInput_ = inputAct_.header.seq;
 }
 
 void stateCallback(const cyberpod_sim_ros::state::ConstPtr msg)
 {
 
 	stateCurrent_ = *msg;
-	iterState_ = stateCurrent_.header.seq;
 
 	filterInput();
 	pub_inputAct_.publish(inputAct_);
@@ -96,8 +92,6 @@ int main(int argc, char *argv[])
 	}
 	// Initialize variables
 	iter_ = 0;
-	iterInput_ = 0;
-	iterState_ = 0;
 	backTrajMsg_.header.frame_id = "/world";
 	backTrajMsg_.poses.reserve(integration_steps+1);
 
