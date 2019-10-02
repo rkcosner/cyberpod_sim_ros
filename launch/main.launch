@@ -1,14 +1,15 @@
 <?xml version="1.0"?>
 <launch>
 	<arg name="teleop" default="joy" />
-   <arg name="filter" default="off"/>
+	<arg name="filter" default="off"/>
+	<arg name="viz" default="on"/>
 
-   <include file="$(find cyberpod_sim_ros)/launch/manual_teleop.launch" if="$(eval teleop == 'joy')"/>
+	<include file="$(find cyberpod_sim_ros)/launch/manual_teleop.launch" if="$(eval teleop == 'joy')"/>
 
-   <include file="$(find cyberpod_sim_ros)/launch/rviz.launch"/>
+	<include file="$(find cyberpod_sim_ros)/launch/rviz.launch" if="$(eval viz == 'on')"/>
 
 	<group ns="cyberpod_sim_ros">
-		
+
 		<node name="integrator" pkg="cyberpod_sim_ros" type="integrator_node" output="screen">
 			<param name="dt" value="0.001" />
 			<param name="umax" value="20.0" />

@@ -30,11 +30,17 @@ void resetOdeState(void)
 void dynamicsCL(const state_t &x, state_t &xDot, const double t)
 {
 	xDot = x;
-   dynamics(t,x.data(),inputCurrent_.inputVec.data(),xDot.data());
+	dynamics(t,x.data(),inputCurrent_.inputVec.data(),xDot.data());
 }
 
 void inputCallback(const cyberpod_sim_ros::input::ConstPtr msg)
 {
+	if(isnan(msg->inputVec[0]) || isnan(msg->inputVec[1]))
+	{
+		ROS_WARN_THROTTLE(1,"Input is NaN");
+		return;
+	}
+
 	inputCurrent_ = *msg;
 	saturateInPlace(inputCurrent_.inputVec.data(),-umax_,umax_,INPUT_LENGTH);
 }
@@ -51,7 +57,6 @@ void updateStateCurrent(void)
 	stateCurrent_.psi = odeState_[5];
 	stateCurrent_.psiDot = odeState_[6];
 	std::copy(odeState_.begin(),odeState_.end(),stateCurrent_.stateVec.begin());
-
 }
 
 void sendStateCurrent(void)

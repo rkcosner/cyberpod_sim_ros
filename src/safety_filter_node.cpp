@@ -29,26 +29,25 @@ using namespace Eigen;
 
 void filterInput(void)
 {
-	iter_++;
-	inputAct_.header.seq = iter_;
-	inputAct_.header.stamp = ros::Time::now();
-	inputAct_.header.frame_id = std::string("stateSeq=") + std::to_string(stateCurrent_.header.seq) + std::string(", inputDesSeq=") + std::to_string(inputDes_.header.seq);
-
 	double xNow[nx] = {stateCurrent_.stateVec[0],stateCurrent_.stateVec[3],stateCurrent_.stateVec[5],stateCurrent_.stateVec[6]};
 	double uDesNow[nu] = {inputDes_.inputVec[0]};
 	double uActNow[nu] = {0.0};
 	double tNow = 0.0;
-	double relax;
+	double relax[2];
 
-	filter_info_.asifReturnCode = asif->filter(xNow,uDesNow,uActNow,relax);
+	int32_t rc = asif->filter(xNow,uDesNow,uActNow,relax);
 
 	filter_info_.hBackupEnd = asif->hBackupEnd_;
-	filter_info_.BTorthoBS = asif->BTorthoBS_;
-	filter_info_.TTS = asif->TTS_;
+	// filter_info_.BTorthoBS = asif->BTorthoBS_;
+	// filter_info_.TTS = asif->TTS_;
 	filter_info_.hSafetyNow = asif->hSafetyNow_;
+	filter_info_.asifStatus = ASIF::ASIFimplicit::filterErrorMsgString(rc);
+	filter_info_.relax1 = relax[0];
+	filter_info_.relax2 = relax[1];
+
 	std::copy((*asif).backTraj_.back().second.begin(),(*asif).backTraj_.back().second.begin()+4,filter_info_.xBackupEnd.begin());
 
-	if(passThrough_==1)
+	if(passThrough_>0 || rc==-1 || rc==2)
 	{
 		std::copy(inputDes_.inputVec.begin(),inputDes_.inputVec.end(),inputAct_.inputVec.begin());
 	}
@@ -58,7 +57,15 @@ void filterInput(void)
 		inputAct_.inputVec[1] = uActNow[0];
 	}
 
+	iter_++;
 	inputAct_.status = static_cast<uint8_t>(STATUS::RUNNING);
+	inputAct_.header.seq = iter_;
+	inputAct_.header.stamp = ros::Time::now();
+	inputAct_.header.frame_id = std::string("stateSeq=") + std::to_string(stateCurrent_.header.seq) + std::string(", inputDesSeq=") + std::to_string(inputDes_.header.seq);
+	backTrajMsg_.header.seq = iter_;
+	backTrajMsg_.header.stamp = inputAct_.header.stamp;
+	filter_info_.header.seq = iter_;
+	filter_info_.header.stamp = inputAct_.header.stamp;
 }
 
 void inputCallback(const cyberpod_sim_ros::input::ConstPtr msg)
@@ -93,7 +100,6 @@ void stateCallback(const cyberpod_sim_ros::state::ConstPtr msg)
 
 		i++;
 	}
-
 
 	pub_backupTraj_.publish(backTrajMsg_);
 }
@@ -133,19 +139,24 @@ int main(int argc, char *argv[])
 	backTrajMsg_.header.frame_id = "/world";
 	inputDes_.inputVec.fill(0.0);
 
-
 	// Initialize asif
-	ASIF::ASIFimplicitTB::Options opts;
+	// ASIF::ASIFimplicitTB::Options opts;
+	// opts.backTrajHorizon = backup_Tmax_;
+	// opts.backTrajDt = integration_dt_;
+	// opts.relaxCost = 10;
+	// opts.relaxSafeLb = 2.0;
+	// opts.relaxTTS = 30.0;
+	// opts.relaxMinOrtho = 60.0;
+	// opts.backTrajMinOrtho = 0.001;
+
+	ASIF::ASIFimplicit::Options opts;
 	opts.backTrajHorizon = backup_Tmax_;
 	opts.backTrajDt = integration_dt_;
-	opts.relaxCost = 10;
-	opts.relaxSafeLb = 2.0;
-	opts.relaxTTS = 30.0;
-	opts.relaxMinOrtho = 60.0;
-	opts.backTrajMinOrtho = 0.001;
+	opts.relaxReachLb = 5.;
+	opts.relaxSafeLb = 10.;
 
-	asif = new ASIF::ASIFimplicitTB(nx,nu,npSS,npBTSS,
-	                                safetySet,backupSet,dynamics,dynamicsGradients,backupController);
+	asif = new ASIF::ASIFimplicit(nx,nu,npSS,npBS,npBTSS,
+	                              safetySet,backupSet,dynamics,dynamicsGradients,backupController);
 
 	asif->initialize(lb,ub,opts);
 	
