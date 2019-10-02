@@ -21,9 +21,7 @@ static const double mPpPt[nx*nx] = {-7.01875144577132, -11.3157179643792, -19.89
 
 static const double Pv = 0.1;
 
-static const Eigen::VectorXd Kvec = 2.0*(Eigen::VectorXd(nx) << 44.7214, 44.6528, 150.1612, 37.6492).finished();
-
-static const double *K = Kvec.data();
+static const double K[nx] = {20.0000, 32.2738, 104.3009, 32.0524};
 
 static const double model[15] = {44.798,            //mb
                                  2.485,             //mw
@@ -37,7 +35,7 @@ static const double model[15] = {44.798,            //mb
                                  0.195,             //r
                                  0.5,               //L
                                  9.81,              //gGravity
-                                 3.185188257847262, //FricCoeff
+                                 0., //FricCoeff
                                  1.0e-3,            //velEps
                                  1.225479467549329  //FricCoeff
                                  };
@@ -47,16 +45,20 @@ ASIF::ASIFimplicit *asif;
 
 void safetySet(const double x[nx], double h[npSS], double Dh[npSS*nx])
 {
+	double xLin[nx];
+	for(uint32_t i=0; i<nx; i++)
+		xLin[i] = x[i] - centerBackup[i];
+
 	for(uint32_t i = 0; i<npSS*nx; i++)
 	{
 		Dh[i] = 0.0;
 	}
 
-	h[0] = 1-(x[0]*x[0])/(xBound[0]*xBound[0]);
-	h[1] = 1-(x[2]*x[2])/(xBound[1]*xBound[1]);
+	h[0] = 1-(xLin[0]*xLin[0])/(xBound[0]*xBound[0]);
+	h[1] = 1-(xLin[2]*xLin[2])/(xBound[1]*xBound[1]);
 
-	Dh[0] = -2.0*x[0]/(xBound[0]*xBound[0]);
-	Dh[5] = -2.0*x[2]/(xBound[1]*xBound[1]);
+	Dh[0] = -2.0*xLin[0]/(xBound[0]*xBound[0]);
+	Dh[5] = -2.0*xLin[2]/(xBound[1]*xBound[1]);
 }
 
 void backupSetWithHess(const double x[nx], double h[1], double Dh[nx], double DDh[nx*nx])
@@ -76,29 +78,32 @@ void backupSetWithHess(const double x[nx], double h[1], double Dh[nx], double DD
 }
 
 void backupSet(const double x[nx], double h[1], double Dh[nx])
-{
+{	
+	double xLin[nx];
+	for(uint32_t i = 0; i<nx; i++)
+		xLin[i] = x[i] - centerBackup[i];
+
 	h[0] = Pv;
 	for(uint32_t i = 0; i<nx; i++)
 	{
 		for(uint32_t j = 0; j<nx; j++)
 		{
-			h[0]-=P[i+j*nx]*(x[i] - centerBackup[i])*(x[j] - centerBackup[j]);			
+			h[0]-=P[i+j*nx]*xLin[i]*xLin[j];			
 		}
 	}
 	ASIF::matrixVectorMultiply(mPpPt,nx,nx,
-	                           x,nx,
+	                           xLin,nx,
 	                           Dh);
 }
 
 void backupController(const double x[nx], double u[nu], double Du[nu*nx])
 {
-	double xTemp[nx] = {0.,0.,-0.138324423615004,0.};
+	double xLin[nx];
 	for(uint32_t i=0; i<nx; i++)
-	{
-		xTemp[i]+=x[i];
-	}
+		xLin[i] = x[i] - centerBackup[i];
+
 	ASIF::matrixVectorMultiply(K,nu,nx,
-	                           xTemp,nx,
+	                           xLin,nx,
 	                           u);
 	memcpy(Du,K,sizeof(K));
 }
