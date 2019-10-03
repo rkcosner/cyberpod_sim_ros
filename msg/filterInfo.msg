@@ -7,3 +7,4 @@ float64 hSafetyNow
 float64[4] xBackupEnd
 float64 relax1
 float64 relax2
+float64 filterTimerMs

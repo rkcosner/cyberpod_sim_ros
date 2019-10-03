@@ -25,8 +25,7 @@
 
 		<node name="controller" pkg="cyberpod_sim_ros" type="controller_node" output="screen">
 			<param name="offset_angle" value="0.138324423615"/>
-			<rosparam param="gains">[20.0000, 0., 0., 32.2738, 0., 104.3009, 32.0524]</rosparam>
+			<rosparam param="gains">[0., 0., 0., 50.8129, 0., 147.1530, 46.8037]</rosparam>
 		</node>
-		
 	</group>
 </launch>

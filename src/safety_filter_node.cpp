@@ -23,6 +23,8 @@ uint32_t iter_;
 double integration_dt_;
 double backup_Tmax_;
 
+CyberTimer<1000> filterTimer;
+
 #include "cyberpod_sim_ros/asif_filter.hpp"
 
 using namespace Eigen;
@@ -35,9 +37,14 @@ void filterInput(void)
 	double tNow = 0.0;
 	double relax[2];
 
+	filterTimer.tic();
 	int32_t rc = asif->filter(xNow,uDesNow,uActNow,relax);
+	filterTimer.toc();
+
 
 	filter_info_.hBackupEnd = asif->hBackupEnd_;
+	filter_info_.filterTimerMs = filterTimer.getAverage()*1e-3;
+
 	// filter_info_.BTorthoBS = asif->BTorthoBS_;
 	// filter_info_.TTS = asif->TTS_;
 	filter_info_.hSafetyNow = asif->hSafetyNow_;
@@ -47,7 +54,7 @@ void filterInput(void)
 
 	std::copy((*asif).backTraj_.back().second.begin(),(*asif).backTraj_.back().second.begin()+4,filter_info_.xBackupEnd.begin());
 
-	if(passThrough_>0 || rc==-1 || rc==2)
+	if(passThrough_>0 /*|| rc==-1 || rc==2*/)
 	{
 		std::copy(inputDes_.inputVec.begin(),inputDes_.inputVec.end(),inputAct_.inputVec.begin());
 	}

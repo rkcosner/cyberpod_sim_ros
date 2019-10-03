@@ -17,9 +17,9 @@ static const double model[15] = {44.798,            //mb
                                  0.195,             //r
                                  0.5,               //L
                                  9.81,              //gGravity
-                                 3.185188257847262, //FricCoeff
+                                 0.,                //FricCoeff 3.185188257847262
                                  1.0e-3,            //velEps
-                                 1.225479467549329  //FricCoeff
+                                 1.225479467549329  //FricCoeff 1.225479467549329
                                  };
 
 void dynamics(const double t,

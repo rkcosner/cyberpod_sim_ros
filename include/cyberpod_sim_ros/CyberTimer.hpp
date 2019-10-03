@@ -52,9 +52,9 @@ public:
 			return -1.0;
 
 		if(iterCount_<averageLen)
-			return std::accumulate(buffer_, buffer_+iterCount_, 0.0)/iterCount_;
+			return std::accumulate(buffer_.begin(), buffer_.begin()+iterCount_, 0.0)/iterCount_;
 
-		return std::accumulate(buffer_, buffer_+averageLen, 0.0)/averageLen;
+		return std::accumulate(buffer_.begin(), buffer_.begin()+averageLen, 0.0)/averageLen;
 	};
 
 	double getAverageCount(void) const
