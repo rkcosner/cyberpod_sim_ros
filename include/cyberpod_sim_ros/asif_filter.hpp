@@ -13,7 +13,7 @@ static const uint32_t npBTSS = 4;
 
 static const double lb[nu] = {-20.0};
 static const double ub[nu] = {20.0};
-static const double xBound[npSS] = {2.0,M_PI/6.};
+static const double xBound[npSS] = {1.0,M_PI/6.};
 static const double xBoundBackup[nx] = {1.,.5,M_PI/6,0.5};
 static const double centerBackup[nx] = {0.,0.,0.138324423615,0.};
 static const double P[nx*nx] = {0.222330715963522, 0.139879018245281, 0.209624517233981, 0.0557338014636194, 0.139879018245281, 0.169436279838067, 0.274687320083041, 0.0691344444520717, 0.209624517233981, 0.274687320083041, 0.576639902582541, 0.120488690876664, 0.0557338014636194, 0.0691344444520717, 0.120488690876664, 0.0315931016158699};

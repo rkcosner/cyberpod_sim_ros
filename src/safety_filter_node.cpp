@@ -43,7 +43,7 @@ void filterInput(void)
 
 
 	filter_info_.hBackupEnd = asif->hBackupEnd_;
-	filter_info_.filterTimerMs = filterTimer.getAverage()*1e-3;
+	filter_info_.filterTimerUs = filterTimer.getAverage()*1.0e6;
 
 	// filter_info_.BTorthoBS = asif->BTorthoBS_;
 	// filter_info_.TTS = asif->TTS_;
