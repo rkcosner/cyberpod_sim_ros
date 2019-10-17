@@ -1,7 +1,5 @@
 #include "cyberpod_sim_ros/safety_filter_node.hpp"
 
-
-
 ros::NodeHandle *nh_;
 ros::NodeHandle *nhParams_;
 

@@ -54,7 +54,7 @@
  <joint name="w2_joint" type="fixed">
     <parent link="cyberpod/base_link" />
     <child link="w2_link" />
-    <origin xyz="0 -.25 0" rpy="0 0 0" />
+    <origin xyz="0 -0.25 0" rpy="0 0 0" />
   </joint>
 
   <link name="w2_link" >
