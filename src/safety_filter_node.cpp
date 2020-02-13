@@ -39,6 +39,9 @@ void filterInput(void)
 	int32_t rc = asif->filter(xNow,uDesNow,uActNow,relax);
 	filterTimer.toc();
 
+	if (rc < 0) {
+		ROS_INFO("QP FAILED");
+	}
 
 	filter_info_.hBackupEnd = asif->hBackupEnd_;
 	filter_info_.filterTimerUs = filterTimer.getAverage()*1.0e6;
@@ -158,7 +161,7 @@ int main(int argc, char *argv[])
 	opts.backTrajHorizon = backup_Tmax_;
 	opts.backTrajDt = integration_dt_;
 	opts.relaxReachLb = 5.;
-	opts.relaxSafeLb = 10.;
+	opts.relaxSafeLb = 1.;
 
 	asif = new ASIF::ASIFimplicit(nx,nu,npSS,npBS,npBTSS,
 	                              safetySet,backupSet,dynamics,dynamicsGradients,backupController);

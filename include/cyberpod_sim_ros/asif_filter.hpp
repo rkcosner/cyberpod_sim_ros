@@ -9,7 +9,7 @@ static const uint32_t nx = 4;
 static const uint32_t nu = 1;
 static const uint32_t npSS = 2;
 static const uint32_t npBS = 1;
-static const uint32_t npBTSS = 1.5;
+static const uint32_t npBTSS = 2;
 
 static const double lb[nu] = {-20.0};
 static const double ub[nu] = {20.0};
@@ -21,7 +21,7 @@ static const double mPpPt[nx*nx] = {-0.338872559676134, -0.549374640166082, -0.1
 
 static const double Pv = 5e-2;
 
-static const double K[nx] = {31.6228, 50.8129, 147.1530, 46.8037};
+static const double K[nx] = {1*44.7214, 1*44.6528, 150.1612, 1*37.6492};
 
 static const double model[15] = {44.798,            //mb
                                  2.485,             //mw
@@ -58,7 +58,7 @@ void safetySet(const double x[nx], double h[npSS], double Dh[npSS*nx])
 	h[1] = 1-(xLin[2]*xLin[2])/(xBound[1]*xBound[1]);
 
 	Dh[0] = -2.0*xLin[0]/(xBound[0]*xBound[0]);
-	Dh[5] = -2.0*xLin[2]/(xBound[1]*xBound[1]);
+	Dh[6] = -2.0*xLin[2]/(xBound[1]*xBound[1]);
 }
 
 void backupSetWithHess(const double x[nx], double h[1], double Dh[nx], double DDh[nx*nx])

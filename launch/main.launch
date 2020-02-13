@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
 	<arg name="teleop" default="joy" />
-	<arg name="filter" default="off"/>
+	<arg name="filter" default="on"/>
 	<arg name="viz" default="on"/>
 
 	<include file="$(find cyberpod_sim_ros)/launch/manual_teleop.launch" if="$(eval teleop == 'joy')"/>
@@ -13,14 +13,15 @@
 		<node name="integrator" pkg="cyberpod_sim_ros" type="integrator_node" output="screen">
 			<param name="dt" value="0.001" />
 			<param name="umax" value="20.0" />
+			<param name="input_delay_ms" value="10.0"/>
 			<rosparam param="IC">[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]</rosparam>
 		</node>
 
 		<node name="safety_filter" pkg="cyberpod_sim_ros" type="safety_filter_node" output="screen">
 			<param name="pass_through" value="0" if="$(eval filter == 'on')"/>
 			<param name="pass_through" value="1" if="$(eval filter == 'off')"/>
-			<param name="integration_dt" value="0.005"/>
-			<param name="backup_Tmax" value="3"/>
+			<param name="integration_dt" value="0.01"/>
+			<param name="backup_Tmax" value="1"/>
 		</node>
 
 		<node name="controller" pkg="cyberpod_sim_ros" type="controller_node" output="screen">

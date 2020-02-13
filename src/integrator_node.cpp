@@ -19,6 +19,8 @@ state_t odeState_;
 cyberpod_sim_ros::state stateCurrent_;
 cyberpod_sim_ros::input inputCurrent_;
 state_t initialConditions_(STATE_LENGTH,0.0);
+double input_delay_ms_ = 0.;
+std::vector<cyberpod_sim_ros::input> inputBuffer_;
 
 void resetOdeState(void)
 {
@@ -40,8 +42,9 @@ void inputCallback(const cyberpod_sim_ros::input::ConstPtr msg)
 		ROS_WARN_THROTTLE(1,"Input is NaN");
 		return;
 	}
-
-	inputCurrent_ = *msg;
+	inputBuffer_.push_back(*msg);
+	inputBuffer_.erase(inputBuffer_.begin());
+	inputCurrent_ = inputBuffer_[inputBuffer_.size()-1-(int)(input_delay_ms_/1000/dt_)];
 	saturateInPlace(inputCurrent_.inputVec.data(),-umax_,umax_,INPUT_LENGTH);
 }
 
@@ -193,6 +196,7 @@ int main (int argc, char *argv[])
 	// Retreive params
 	nhParams_->param<double>("dt",dt_,0.001);
 	nhParams_->param<double>("umax",umax_,20.);
+	nhParams_->param<double>("input_delay_ms",input_delay_ms_,1.);
 	nhParams_->param<state_t>("IC",initialConditions_,initialConditions_);
 
 	if(dt_<=0.0)
@@ -205,6 +209,12 @@ int main (int argc, char *argv[])
 		umax_ = 20.;
 		ROS_WARN("dt must be strictly positive. Will be set to %f",umax_);
 	}
+
+	if(input_delay_ms_<=1.0)
+	{
+		input_delay_ms_ = 1.0;
+		ROS_WARN("input_delay_ms must be greater or equal to 1.0. Will be set to %f",input_delay_ms_);
+	}
 	
 	if(initialConditions_.size()!=STATE_LENGTH)
 	{
@@ -216,12 +226,17 @@ int main (int argc, char *argv[])
 	iter_ = 0;
 	status_ = STATUS::STOPPED;
 	resetOdeState();
-
+	inputBuffer_.resize((int)(2*input_delay_ms_/1000/dt_));
+	for (int i = 0; i < (int)(2*input_delay_ms_/1000/dt_); i++) {
+		inputBuffer_[i].inputVec[0] = 0.;
+		inputBuffer_[i].inputVec[1] = 0.;
+	}
 	ros::Rate rate(1/dt_);
 
 	// Display node info
 	ROS_INFO("Integrator node successfuly started with:");
 	ROS_INFO("___dt=%.4fs",dt_);
+	ROS_INFO("___input_delay_ms=%.4fs",input_delay_ms_);
 	ROS_INFO("___IC=");
 	for(uint8_t i = 0; i<STATE_LENGTH; i++)
 	{

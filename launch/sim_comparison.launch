@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<launch>
+	<arg name="filter" default="on"/>
+	<arg name="viz" default="on"/>
+
+	<include file="$(find cyberpod_sim_ros)/launch/rviz.launch" if="$(eval viz == 'on')"/>
+
+	<arg name="file" default="/home/drew/Desktop/segway_bags/tom/barrier_test.bag" />
+  	<node pkg="rosbag" type="play" name="playback" ns="myNamespace" args="-l --clock $(arg file)">
+    	<!-- <remap from="/cyberpod/input/data" to="/cyberpod_sim_ros/inputDes"/> -->
+  	</node>
+
+	<group ns="cyberpod_sim_ros">
+		<node name="converter" pkg="cyberpod_sim_ros" type="converter_node" output="screen">
+		</node>
+
+		<node name="safety_filter" pkg="cyberpod_sim_ros" type="safety_filter_node" output="screen">
+			<param name="pass_through" value="0" if="$(eval filter == 'on')"/>
+			<param name="pass_through" value="1" if="$(eval filter == 'off')"/>
+			<param name="integration_dt" value="0.005"/>
+			<param name="backup_Tmax" value=".5"/>
+		</node>
+	</group>
+</launch>
