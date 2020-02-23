@@ -1,5 +1,5 @@
-#ifndef UAV_DYNAMICS_H
-#define UAV_DYNAMICS_H
+#ifndef DYNAMICS_H
+#define DYNAMICS_H
 
 #include "cyberpod_sim_ros/common.hpp"
 #include <Eigen/Dense>

@@ -1,4 +1,4 @@
-#include "cyberpod_sim_ros/integrator_node.hpp" 
+#include "cyberpod_sim_ros/integrator_node.hpp"
 
 
 using namespace Eigen;
@@ -67,7 +67,7 @@ void sendStateCurrent(void)
 	stateCurrent_.header.seq = iter_;
 	stateCurrent_.header.stamp = ros::Time::now();
 	stateCurrent_.header.frame_id = std::string("inputSeq=") + std::to_string(inputCurrent_.header.seq);
-	
+
 	pub_state_.publish(stateCurrent_);
 }
 
@@ -83,7 +83,7 @@ void sendTransformCurrent(void)
 	odom_trans.transform.translation.x = stateCurrent_.x;
 	odom_trans.transform.translation.y = stateCurrent_.y;
 	odom_trans.transform.translation.z = 0.195;
-	
+
 	Quaterniond cyberpod_q;
 	Vector3d cyberpod_eul(0.0,stateCurrent_.psi,stateCurrent_.theta);
 	eul2quatZYX(cyberpod_eul,cyberpod_q);
@@ -113,7 +113,7 @@ bool interpretRequestCmd(const uint8_t &cmdRaw,
 
 bool uiCallback(cyberpod_sim_ros::ui::Request &req,
                 cyberpod_sim_ros::ui::Response &res)
-{ 
+{
 	CMD cmd;
 	if(!interpretRequestCmd(req.cmd,cmd))
 	{
@@ -150,7 +150,7 @@ bool uiCallback(cyberpod_sim_ros::ui::Request &req,
 			if(req.data.size()==STATE_LENGTH)
 			{
 				ROS_INFO("State reseted to custom value");
-				odeState_ = state_t(req.data.begin(),req.data.end());		
+				odeState_ = state_t(req.data.begin(),req.data.end());
 			}
 			else
 			{
@@ -190,7 +190,7 @@ int main (int argc, char *argv[])
 
 	// Init pubs, subs and srvs
 	sub_input_ = nh_->subscribe<cyberpod_sim_ros::input>("input", 1,inputCallback);
-	pub_state_ = nh_->advertise<cyberpod_sim_ros::state>("state", 1);
+	pub_state_ = nh_->advertise<cyberpod_sim_ros::state>("state_true", 1);
 	srv_ui_ = nh_->advertiseService("integrator/ui", uiCallback);
 
 	// Retreive params
@@ -215,7 +215,7 @@ int main (int argc, char *argv[])
 		input_delay_ms_ = 1.0;
 		ROS_WARN("input_delay_ms must be greater or equal to 1.0. Will be set to %f",input_delay_ms_);
 	}
-	
+
 	if(initialConditions_.size()!=STATE_LENGTH)
 	{
 		initialConditions_ = state_t(STATE_LENGTH,0.0);
@@ -256,7 +256,7 @@ int main (int argc, char *argv[])
 			odeStepper_.do_step(dynamicsCL,odeState_,t_,dt_);
 			updateStateCurrent();
 			iter_++;
-			t_+=dt_;			
+			t_+=dt_;
 
 			//Publish state
 			sendStateCurrent();

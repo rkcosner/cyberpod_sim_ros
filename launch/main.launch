@@ -6,7 +6,7 @@
 
 	<include file="$(find cyberpod_sim_ros)/launch/manual_teleop.launch" if="$(eval teleop == 'joy')"/>
 
-	<include file="$(find cyberpod_sim_ros)/launch/rviz.launch" if="$(eval viz == 'on')"/>
+	<!-- <include file="$(find cyberpod_sim_ros)/launch/rviz.launch" if="$(eval viz == 'on')"/> -->
 
 	<group ns="cyberpod_sim_ros">
 
@@ -27,6 +27,14 @@
 		<node name="controller" pkg="cyberpod_sim_ros" type="controller_node" output="screen">
 			<param name="offset_angle" value="0.138324423615"/>
 			<rosparam param="gains">[0., 0., 0., 50.8129, 0., 147.1530, 46.8037]</rosparam>
+		</node>
+
+		<node name="sensor" pkg="cyberpod_sim_ros" type="sensor_node" output="screen">
+			<param name="offset_angle" value="0.138324423615"/>
+		</node>
+
+		<node name="ekf" pkg="cyberpod_sim_ros" type="ekf_node" output="screen">
+			<param name="offset_angle" value="0.138324423615"/>
 		</node>
 	</group>
 </launch>

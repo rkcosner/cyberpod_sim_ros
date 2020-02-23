@@ -4,7 +4,7 @@
 	<group ns="cyberpod_sim_ros">
 
 		<node name="manual_teleop" pkg="cyberpod_sim_ros" type="manual_teleop_node" output="screen">
-			<param name="input_dev" value="/dev/input/event4" />
+			<param name="input_dev" value="/dev/input/event1" />
 			<param name="hz" value="100" />
 			<param name="vx" value="1.0" />
 			<param name="vyaw" value="1.6" />
