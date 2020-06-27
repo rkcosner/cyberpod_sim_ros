@@ -71,7 +71,7 @@ int main (int argc, char *argv[])
 	cmdCurrent_.cmd.resize(2,0.0);
 
 	// Init pubs, subs and srvs
-	sub_state_ = nh_->subscribe<cyberpod_sim_ros::state>("state", 1, controlCallback);
+	sub_state_ = nh_->subscribe<cyberpod_sim_ros::state>("state_true", 1, controlCallback);
 	sub_cmd_ = nh_->subscribe<cyberpod_sim_ros::cmd>("cmd", 1, cmdCallback);
 	pub_input_ = nh_->advertise<cyberpod_sim_ros::input>("inputDes", 1);
 
