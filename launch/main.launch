@@ -4,9 +4,8 @@
 	<arg name="filter" default="on"/>
 	<arg name="viz" default="on"/>
 
-	<include file="$(find cyberpod_sim_ros)/launch/manual_teleop.launch" if="$(eval teleop == 'joy')"/>
-
-	<!-- <include file="$(find cyberpod_sim_ros)/launch/rviz.launch" if="$(eval viz == 'on')"/> -->
+	<!--<include file="$(find cyberpod_sim_ros)/launch/manual_teleop.launch" if="$(eval teleop == 'joy')"/>-->
+	<include file="$(find cyberpod_sim_ros)/launch/rviz.launch" if="$(eval viz == 'on')"/> 
 
 	<group ns="cyberpod_sim_ros">
 
@@ -16,25 +15,52 @@
 			<param name="input_delay_ms" value="10.0"/>
 			<rosparam param="IC">[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]</rosparam>
 		</node>
-
-		<node name="safety_filter" pkg="cyberpod_sim_ros" type="safety_filter_node" output="screen">
+		
+		<!--<node name="safety_filter" pkg="cyberpod_sim_ros" type="safety_filter_node" output="screen">
 			<param name="pass_through" value="0" if="$(eval filter == 'on')"/>
 			<param name="pass_through" value="1" if="$(eval filter == 'off')"/>
 			<param name="integration_dt" value="0.01"/>
 			<param name="backup_Tmax" value="1"/>
-		</node>
+		</node> -->
 
 		<node name="controller" pkg="cyberpod_sim_ros" type="controller_node" output="screen">
 			<param name="offset_angle" value="0.138324423615"/>
 			<rosparam param="gains">[0., 0., 0., 50.8129, 0., 147.1530, 46.8037]</rosparam>
 		</node>
 
-		<node name="sensor" pkg="cyberpod_sim_ros" type="sensor_node" output="screen">
-			<param name="offset_angle" value="0.138324423615"/>
+		<node name="image_processor" pkg="cyberpod_sim_ros" type="image_processor_node" output="screen">
 		</node>
-
-		<node name="ekf" pkg="cyberpod_sim_ros" type="ekf_node" output="screen">
+		
+		<!--<node name="sensor" pkg="cyberpod_sim_ros" type="sensor_node" output="screen">
 			<param name="offset_angle" value="0.138324423615"/>
+		</node> --> 
+
+		<!-- <node name="ekf" pkg="cyberpod_sim_ros" type="ekf_node" output="screen">
+			<param name="offset_angle" value="0.138324423615"/>
+		</node> --> 
+	</group>
+
+	<group ns="camera1">
+		<node pkg="tf" type="static_transform_publisher" name="camera_broadcaster"
+			args="0 2 0.5 0 3.14 1.5 world camera1 10" />
+		<node name="camera_info" pkg="rostopic" type="rostopic"
+			args="pub camera_info sensor_msgs/CameraInfo
+		   '{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: 'camera1'},
+			height: 480, width: 640, distortion_model: 'plumb_bob',
+			D: [0],
+			K: [500.0, 0.0, 320, 0.0, 500.0, 240.0, 0.0, 0.0, 1.0],
+			R: [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0],
+			P: [500.0, 0.0, 320, 0.0, 0.0, 500, 240, 0.0, 0.0, 0.0, 1.0, 0.0],
+			binning_x: 0, binning_y: 0,
+			roi: {x_offset: 0, y_offset: 0, height: 480, width: 640, do_rectify: false}}' -r 2"
+			output="screen"/>
+	</group>
+
+	<group ns="image_viewer">
+		<node name="image_view" pkg="image_view" type="image_view" respawn="false" output="screen">
+			<remap from="image" to="/camera1/camera_feed"/>
 		</node>
 	</group>
+
+
 </launch>
