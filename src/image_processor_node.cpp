@@ -6,7 +6,7 @@ ros::NodeHandle *nh_;
 ros::NodeHandle *nhParams_;
 ros::Subscriber sub_camera_feed_;
 ros::Subscriber sub_cmd_;
-ros::Publisher pub_input_;
+ros::Publisher pub_state_image_;
 
 cyberpod_sim_ros::input input_;
 cyberpod_sim_ros::cmd cmdCurrent_;
@@ -44,7 +44,7 @@ int main (int argc, char *argv[])
 	// Init pubs, subs and srvs
 	sub_camera_feed_ = nh_->subscribe<sensor_msgs::Image>("/camera1/camera_feed", 1, imageCallback);
 	sub_cmd_ = nh_->subscribe<cyberpod_sim_ros::cmd>("cmd", 1, cmdCallback);
-	pub_input_ = nh_->advertise<cyberpod_sim_ros::input>("inputDes", 1);
+	pub_state_image_ = nh_->advertise<cyberpod_sim_ros::state>("state_image", 1);
 
 	// Retreive params
 	/*

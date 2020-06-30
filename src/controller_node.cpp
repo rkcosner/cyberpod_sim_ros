@@ -4,7 +4,8 @@ using namespace Eigen;
 
 ros::NodeHandle *nh_;
 ros::NodeHandle *nhParams_;
-ros::Subscriber sub_state_;
+ros::Subscriber sub_state_measured_;
+ros::Subscriber sub_state_image_;
 ros::Subscriber sub_cmd_;
 ros::Publisher pub_input_;
 
@@ -35,10 +36,14 @@ void computeControlAction(void)
 	stateDes(5)=offset_angle_;
 	stateDes(3)=cmdCurrent_.cmd[0];
 
-	const double u = gainsVec_.dot(stateCurrentVec_ - stateDes);
+	const double u = gainsVec_.dot(stateCurrentVec_ - stateDes); 
 
 	input_.inputVec[0] = u;
 	input_.inputVec[1] = u;
+}
+
+void imageCallback(const cyberpod_sim_ros::state::ConstPtr msg){
+	// Callback function for receiving state information from images
 }
 
 void controlCallback(const cyberpod_sim_ros::state::ConstPtr msg)
@@ -71,7 +76,8 @@ int main (int argc, char *argv[])
 	cmdCurrent_.cmd.resize(2,0.0);
 
 	// Init pubs, subs and srvs
-	sub_state_ = nh_->subscribe<cyberpod_sim_ros::state>("state_true", 1, controlCallback);
+	sub_state_image_ = nh_->subscribe<cyberpod_sim_ros::state>("state_image", 1, imageCallback);
+	sub_state_measured_ = nh_->subscribe<cyberpod_sim_ros::state>("state_measured", 1, controlCallback);
 	sub_cmd_ = nh_->subscribe<cyberpod_sim_ros::cmd>("cmd", 1, cmdCallback);
 	pub_input_ = nh_->advertise<cyberpod_sim_ros::input>("inputDes", 1);
 

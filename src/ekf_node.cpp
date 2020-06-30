@@ -75,7 +75,7 @@ int main (int argc, char *argv[])
 	// Init pubs, subs and srvs
 	sub_input_ = nh_->subscribe<cyberpod_sim_ros::input>("input", 1,inputCallback);
 	sub_sensor_ = nh_->subscribe<cyberpod_sim_ros::sensor>("sensor", 1,sensorCallback);
-	pub_state_ = nh_->advertise<cyberpod_sim_ros::state>("state", 1);
+	pub_state_ = nh_->advertise<cyberpod_sim_ros::state>("state_measured", 1);
 
 	// Retreive params
 	// nhParams_->param<double>("enc_v_variance",enc_v_variance_,0.001);

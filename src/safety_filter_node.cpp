@@ -3,8 +3,9 @@
 ros::NodeHandle *nh_;
 ros::NodeHandle *nhParams_;
 
-ros::Subscriber sub_state_;
+ros::Subscriber sub_state_true_;
 ros::Subscriber sub_inputDes_;
+ros::Subscriber sub_state_image_;
 
 ros::Publisher pub_inputAct_;
 ros::Publisher pub_info_;
@@ -76,6 +77,11 @@ void filterInput(void)
 	filter_info_.header.stamp = inputAct_.header.stamp;
 }
 
+void imageCallback(const cyberpod_sim_ros::state::ConstPtr msg)
+{
+	// handle state from processed image
+}
+
 void inputCallback(const cyberpod_sim_ros::input::ConstPtr msg)
 {
 	inputDes_ = *msg;
@@ -124,7 +130,8 @@ int main(int argc, char *argv[])
 	nh_ = new ros::NodeHandle();
 
 	// Init pubs, subs and srvs
-	sub_state_ = nh_->subscribe<cyberpod_sim_ros::state>("state_true", 1, stateCallback);
+	sub_state_image_ = nh_->subscribe<cyberpod_sim_ros::state>("state_image", 1, imageCallback);
+	sub_state_true_ = nh_->subscribe<cyberpod_sim_ros::state>("state_true", 1, stateCallback);
 	sub_inputDes_ = nh_->subscribe<cyberpod_sim_ros::input>("inputDes", 1, inputCallback);
 
 	pub_inputAct_ = nh_->advertise<cyberpod_sim_ros::input>("input", 1);

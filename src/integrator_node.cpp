@@ -189,7 +189,7 @@ int main (int argc, char *argv[])
 	nh_ = new ros::NodeHandle();
 
 	// Init pubs, subs and srvs
-	sub_input_ = nh_->subscribe<cyberpod_sim_ros::input>("inputDes", 1,inputCallback);
+	sub_input_ = nh_->subscribe<cyberpod_sim_ros::input>("input", 1,inputCallback);
 	pub_state_ = nh_->advertise<cyberpod_sim_ros::state>("state_true", 1);
 	srv_ui_ = nh_->advertiseService("integrator/ui", uiCallback);
 
