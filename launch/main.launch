@@ -3,7 +3,7 @@
 	<arg name="teleop" default="joy" />
 	<arg name="filter" default="on"/>
 	<arg name="viz" default="on"/>
-
+	<arg name="recording" default="off"/>
 	<!--<include file="$(find cyberpod_sim_ros)/launch/manual_teleop.launch" if="$(eval teleop == 'joy')"/>-->
 	<include file="$(find cyberpod_sim_ros)/launch/rviz.launch" if="$(eval viz == 'on')"/> 
 
@@ -13,7 +13,8 @@
 			<param name="dt" value="0.001" />
 			<param name="umax" value="20.0" />
 			<param name="input_delay_ms" value="10.0"/>
-			<rosparam param="IC">[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]</rosparam>
+			<!--State Vector [x, y, theta_z, xdot, theta_zdot, theta_y, theta_ydot ] --> 
+			<rosparam param="IC">[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.0]</rosparam>
 		</node>
 		
 		<node name="safety_filter" pkg="cyberpod_sim_ros" type="safety_filter_node" output="screen">
@@ -30,7 +31,14 @@
 
 		<node name="image_processor" pkg="cyberpod_sim_ros" type="image_processor_node" output="screen">
 		</node>
-		
+
+		<node pkg="rosbag" type="record" name="rosbag_recorder"
+			args="record -o $(find cyberpod_sim_ros)/bags/recording /cyberpod_sim_ros/learning_data_throttled" output="screen" if="$(eval recording == 'on')"
+		/>
+
+		<node name="rosbag_throttler" type="throttle" pkg="topic_tools" args="messages /cyberpod_sim_ros/learning_data 16 /cyberpod_sim_ros/learning_data_throttled"/>
+
+		<!--
 		<node name="sensor" pkg="cyberpod_sim_ros" type="sensor_node" output="screen">
 			<param name="offset_angle" value="0.138324423615"/>
 		</node>
@@ -38,21 +46,22 @@
 		<node name="ekf" pkg="cyberpod_sim_ros" type="ekf_node" output="screen">
 			<param name="offset_angle" value="0.138324423615"/>
 		</node>
+		--> 
 	</group>
 
 	<group ns="camera1">
 		<node pkg="tf" type="static_transform_publisher" name="camera_broadcaster"
-			args="0 2 0.5 0 3.14 1.5 world camera1 10" />
+			args="-0.25 2.5 0.5 0 3.14 1.35 world camera1 10" />
 		<node name="camera_info" pkg="rostopic" type="rostopic"
 			args="pub camera_info sensor_msgs/CameraInfo
 		   '{header: {seq: 0, stamp: {secs: 0, nsecs: 0}, frame_id: 'camera1'},
-			height: 480, width: 640, distortion_model: 'plumb_bob',
+			height: 250, width: 525, distortion_model: 'plumb_bob',
 			D: [0],
 			K: [500.0, 0.0, 320, 0.0, 500.0, 240.0, 0.0, 0.0, 1.0],
 			R: [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0],
 			P: [500.0, 0.0, 320, 0.0, 0.0, 500, 240, 0.0, 0.0, 0.0, 1.0, 0.0],
-			binning_x: 0, binning_y: 0,
-			roi: {x_offset: 0, y_offset: 0, height: 480, width: 640, do_rectify: false}}' -r 2"
+			binning_x: 100, binning_y: 100,
+			roi: {x_offset: 0, y_offset: 0, height: 250, width: 525, do_rectify: false}}' -r 2"
 			output="screen"/>
 	</group>
 
