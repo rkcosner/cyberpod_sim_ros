@@ -42,6 +42,7 @@ add_message_files(
   cmd.msg
   filterInfo.msg
   sensor.msg
+  learning_data.msg
 )
 
 # Generate services in the 'srv' folder
