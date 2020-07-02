@@ -8,6 +8,7 @@
 #include "cyberpod_sim_ros/cmd.h"
 #include "visualization_msgs/Marker.h"
 #include "sensor_msgs/Image.h"
+#include "cyberpod_sim_ros/learning_data.h"
 
 enum class STATUS : uint8_t
 {
