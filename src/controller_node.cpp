@@ -67,7 +67,7 @@ int main (int argc, char *argv[])
 	// Init ros
 	ros::init(argc,argv,"controller");
 
-	// Instanciate NodeHandles
+	// Instantiate NodeHandles
 	nhParams_ = new ros::NodeHandle("~");
 	nh_ = new ros::NodeHandle();
 
@@ -77,7 +77,7 @@ int main (int argc, char *argv[])
 
 	// Init pubs, subs and srvs
 	sub_state_image_ = nh_->subscribe<cyberpod_sim_ros::state>("state_image", 1, imageCallback);
-	sub_state_measured_ = nh_->subscribe<cyberpod_sim_ros::state>("state_measured", 1, controlCallback);
+	sub_state_measured_ = nh_->subscribe<cyberpod_sim_ros::state>("state_true", 1, controlCallback);
 	sub_cmd_ = nh_->subscribe<cyberpod_sim_ros::cmd>("cmd", 1, cmdCallback);
 	pub_input_ = nh_->advertise<cyberpod_sim_ros::input>("inputDes", 1);
 

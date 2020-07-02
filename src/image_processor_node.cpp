@@ -6,16 +6,29 @@ ros::NodeHandle *nh_;
 ros::NodeHandle *nhParams_;
 ros::Subscriber sub_camera_feed_;
 ros::Subscriber sub_cmd_;
+ros::Subscriber sub_state_true_; 
 ros::Publisher pub_state_image_;
+ros::Publisher pub_learning_data_; 
 
+cyberpod_sim_ros::learning_data learningDataCurrent_; 
 cyberpod_sim_ros::input input_;
 cyberpod_sim_ros::cmd cmdCurrent_;
 sensor_msgs::Image imageCurrent_;
 
 // Callback Functions
 
+void trueStateCallback(const cyberpod_sim_ros::state::ConstPtr msg)
+{	
+	learningDataCurrent_.status = msg->status; 
+	learningDataCurrent_.time_stamp= ros::Time::now();
+	learningDataCurrent_.stateVec=msg->stateVec;
+}
+
 void imageCallback(const sensor_msgs::Image::ConstPtr msg)
 {
+	learningDataCurrent_.time_stamp=ros::Time::now(); 
+	learningDataCurrent_.image=msg->data;   
+	pub_learning_data_.publish(learningDataCurrent_); 
 
 }
 
@@ -35,7 +48,7 @@ int main (int argc, char *argv[])
 	// Init ros
 	ros::init(argc,argv,"image_processor");
 
-	// Instanciate NodeHandles
+	// Instantiate NodeHandles
 	nhParams_ = new ros::NodeHandle("~");
 	nh_ = new ros::NodeHandle();
 
@@ -43,8 +56,10 @@ int main (int argc, char *argv[])
 
 	// Init pubs, subs and srvs
 	sub_camera_feed_ = nh_->subscribe<sensor_msgs::Image>("/camera1/camera_feed", 1, imageCallback);
+	sub_state_true_ =  nh_->subscribe<cyberpod_sim_ros::state>("/cyberpod_sim_ros/state_true", 1, trueStateCallback);
 	sub_cmd_ = nh_->subscribe<cyberpod_sim_ros::cmd>("cmd", 1, cmdCallback);
 	pub_state_image_ = nh_->advertise<cyberpod_sim_ros::state>("state_image", 1);
+	pub_learning_data_ =  nh_->advertise<cyberpod_sim_ros::learning_data>("learning_data", 1);
 
 	// Retreive params
 	/*
@@ -71,7 +86,7 @@ int main (int argc, char *argv[])
 
 	// Take it for a spin
 	while(ros::ok())
-		ros::spinOnce(); // this looks like there's something wrong... where's the code block? 
+		ros::spinOnce(); 
 
 	return 0;
 }

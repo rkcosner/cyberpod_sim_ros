@@ -149,7 +149,7 @@ bool uiCallback(cyberpod_sim_ros::ui::Request &req,
 		{
 			if(req.data.size()==STATE_LENGTH)
 			{
-				ROS_INFO("State reseted to custom value");
+				ROS_INFO("State reset to custom value");
 				odeState_ = state_t(req.data.begin(),req.data.end());
 			}
 			else
