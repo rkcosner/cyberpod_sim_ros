@@ -38,7 +38,7 @@
 
 		<node name="rosbag_throttler" type="throttle" pkg="topic_tools" args="messages /cyberpod_sim_ros/learning_data 16 /cyberpod_sim_ros/learning_data_throttled"/>
 
-		<!--
+
 		<node name="sensor" pkg="cyberpod_sim_ros" type="sensor_node" output="screen">
 			<param name="offset_angle" value="0.138324423615"/>
 		</node>
@@ -46,7 +46,7 @@
 		<node name="ekf" pkg="cyberpod_sim_ros" type="ekf_node" output="screen">
 			<param name="offset_angle" value="0.138324423615"/>
 		</node>
-		--> 
+
 	</group>
 
 	<group ns="camera1">
