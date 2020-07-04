@@ -24,7 +24,10 @@ sudo make install
 *go to top level of catkin workspace*
 catkin_make *whenever code changes*
 source devel/setup.bash *in every new terminal*
-roslaunch cyberpod_sim_ros main.launch 
+roslaunch cyberpod_sim_ros main.launch recording:="on" *the recording variable is "off" by default*
 *in new terminal*
 rosservice call /cyberpod_sim_ros/integrator/ui "cmd: 1 
 data:-0" *cmd: 0 stops, 1 starts, 4 resets*
+
+## Recordings
+Recordings will appear in the /bags folder in the repo and in that folder is another readme for how to format the data.
