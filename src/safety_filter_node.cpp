@@ -131,7 +131,7 @@ int main(int argc, char *argv[])
 
 	// Init pubs, subs and srvs
 	sub_state_image_ = nh_->subscribe<cyberpod_sim_ros::state>("state_image", 1, imageCallback);
-	sub_state_true_ = nh_->subscribe<cyberpod_sim_ros::state>("state_true", 1, stateCallback);
+	sub_state_true_ = nh_->subscribe<cyberpod_sim_ros::state>("state_measured", 1, stateCallback);
 	sub_inputDes_ = nh_->subscribe<cyberpod_sim_ros::input>("inputDes", 1, inputCallback);
 
 	pub_inputAct_ = nh_->advertise<cyberpod_sim_ros::input>("input", 1);

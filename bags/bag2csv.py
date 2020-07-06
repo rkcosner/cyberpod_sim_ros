@@ -27,32 +27,32 @@ import shutil
 #	- 1 input: convert all bag files to 
 if (len(sys.argv) > 2):
 	# Input Error
-	print "invalid number of arguments:   " + str(len(sys.argv))
-	print "should be 2: 'bag2csv.py' and 'bagName'"
+	print "Invalid number of arguments:   " + str(len(sys.argv))
+	print "There should be 2: 'bag2csv.py' and 'bagName'"
 	print "or just 1  : 'bag2csv.py'"
 	sys.exit(1)
 elif (len(sys.argv) == 2):
 	# Find 1 bag file given
 	listOfBagFiles = [sys.argv[1]]
 	numberOfFiles = str(len(listOfBagFiles))
-	print "reading only 1 bagfile: " + str(listOfBagFiles[0])
+	print "Reading only 1 bagfile: " + str(listOfBagFiles[0])
 elif (len(sys.argv) == 1):
 	# Find all bag files
 	listOfBagFiles = [f for f in os.listdir(".") if f[-4:] == ".bag"]	
 	numberOfFiles = str(len(listOfBagFiles))
-	print "reading all " + numberOfFiles + " bagfiles in current directory: \n"
+	print "Reading all " + numberOfFiles + " bagfiles in current directory: \n"
 	for f in listOfBagFiles:
 		print f
 else:
 	# Exception
-	print "bad argument(s): " + str(sys.argv)
+	print "Bad argument(s): " + str(sys.argv)
 	sys.exit(1)
 
 
 count = 0
 for bagFile in listOfBagFiles:
 	count += 1
-	print "reading file " + str(count) + " of  " + numberOfFiles + ": " + bagFile
+	print "Reading file " + str(count) + " of  " + numberOfFiles + ": " + bagFile
 	# Access bagFile
 	bag = rosbag.Bag(bagFile)
 	bagContents = bag.read_messages()
