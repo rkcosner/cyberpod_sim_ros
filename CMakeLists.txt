@@ -84,6 +84,7 @@ add_executable(converter_node src/converter_node.cpp)
 add_executable(sensor_node src/sensor_node.cpp)
 add_executable(ekf_node src/ekf_node.cpp src/ekf.cpp)
 add_executable(image_processor_node src/image_processor_node.cpp)
+add_executable(grid_state_space_node src/grid_state_space_node.cpp)
 
 
 # Ensure messages built first
@@ -95,7 +96,7 @@ add_dependencies(converter_node cyberpod_sim_ros_generate_messages_cpp)
 add_dependencies(sensor_node cyberpod_sim_ros_generate_messages_cpp)
 add_dependencies(ekf_node cyberpod_sim_ros_generate_messages_cpp)
 add_dependencies(image_processor_node cyberpod_sim_ros_generate_messages_cpp)
-
+add_dependencies(grid_state_space_node cyberpod_sim_ros_generate_messages_cpp)
 
 target_link_libraries(integrator_node
                       ${catkin_LIBRARIES}
@@ -135,6 +136,11 @@ target_link_libraries(ekf_node
 )
 
 target_link_libraries(image_processor_node
+                      ${catkin_LIBRARIES}
+                      Eigen3::Eigen
+)
+
+target_link_libraries(grid_state_space_node
                       ${catkin_LIBRARIES}
                       Eigen3::Eigen
 )
