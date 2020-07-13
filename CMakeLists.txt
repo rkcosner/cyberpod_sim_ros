@@ -76,9 +76,10 @@ include_directories(
 	${catkin_INCLUDE_DIRS}
 )
 
-catkin_install_python(PROGRAMS src/src_python/ecos_filter.py 
-  DESTINATION $(CATKIN_PACKAGE_BIN_DESTINATION))
-
+## Add Python Node
+catkin_install_python(PROGRAMS src/src_python/ecos_filter_node.py 
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
 add_executable(integrator_node src/integrator_node.cpp)
 add_executable(controller_node src/controller_node.cpp)
