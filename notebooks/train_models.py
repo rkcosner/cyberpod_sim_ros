@@ -58,8 +58,8 @@ def main(train_data_fn, test_data, retrain_metric='mean'):
     # TODO: possibly use alternate regressors
     reg = KernelRidge(kernel='rbf')
     n_features = Xs['train'].shape[1]
-    param_grid = {'alpha': np.linspace(0,1,1),
-                  'gamma': np.linspace(1/n_features,1/n_features, 1)}
+    param_grid = {'alpha': np.linspace(0,1,5),
+                  'gamma': np.logspace(-4,1, 5)/n_features}
     # TODO: additional metrics
     scoring = {'mean': mean_squared_error,}
                # 'median': np.median((ys['train']-y_pred['train'][params])**2, axis=1),
@@ -70,6 +70,7 @@ def main(train_data_fn, test_data, retrain_metric='mean'):
     y_pred = {'train':{}, 'test':{}}
     for alpha in param_grid['alpha']:
         for gamma in param_grid['gamma']:
+            print('Now training for {:.2g},{:.2g}'.format(alpha, gamma))
             # fit regressor
             reg.set_params(alpha=alpha, gamma=gamma)
             reg.fit(Xs['train'], ys['train'])
@@ -79,7 +80,8 @@ def main(train_data_fn, test_data, retrain_metric='mean'):
             y_pred['test'][(alpha,gamma)] = reg.predict(Xs['test'])
             for metric in scoring.keys():
                 res[metric][(alpha,gamma)] = scoring[metric](ys['test'], y_pred['test'][(alpha,gamma)])
-    
+            print([res[metric][(alpha,gamma)] for metric in scoring.keys()])
+
     for metric in scoring.keys():
         params, err = min(res[metric].items(), key=lambda x: x[1]) 
         plt.figure(figsize=[4,4])
@@ -114,8 +116,8 @@ def load_obj(name ):
 
 if __name__ == '__main__':
     train_data_fn = 'gridded_data.csv'
-    test_data = 'uniform'
+    # test_data = 'uniform'
     # test_data = 'test_case_2_no_EKF_var_1.csv'
     # test_data = 'test_case_2_no_EKF_var_0_1.csv'
-    # test_data = [[-1, 1], [-1, -1]]
+    test_data = [[-1, 1], [-1, -1]]
     main(train_data_fn, test_data)

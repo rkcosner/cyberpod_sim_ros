@@ -1,6 +1,5 @@
 import numpy as np
 import sklearn.metrics
-import train_models
 from sklearn.metrics.pairwise import euclidean_distances
 
 train_data_fn = 'gridded_data.csv'
