@@ -1,5 +1,6 @@
 import numpy as np
 import scipy.linalg
+import sklearn.metrics
 
 class Predictor():
     """Base class for predictors.
