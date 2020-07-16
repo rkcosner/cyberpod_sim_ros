@@ -59,7 +59,7 @@ for bagFile in listOfBagFiles:
 	bagName = bag.filename
 
 	# Create a new directory for each .bag 
-	folder = 'CSV_for_'+string.rstrip(bagName, ".bag")
+	folder = string.rstrip(bagName, ".bag")
 	try:	# Test file existence
 		os.makedirs(folder)
 	except:
@@ -76,7 +76,7 @@ for bagFile in listOfBagFiles:
 
 	for topicName in listOfTopics:
 		# Create a new .csv file for each topic in .bag
-		filename = folder + '/' + string.replace(topicName, '/', '_slash_') + '.csv'
+		filename = folder + '/' + folder + '.csv' #folder + '/' + string.replace(topicName, '/', '_slash_') + '.csv'
 		with open(filename, 'w+') as csvfile:
 			filewriter = csv.writer(csvfile, delimiter = ',')
 			firstIteration = True	# Allows header row
