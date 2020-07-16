@@ -43,6 +43,7 @@ add_message_files(
   filterInfo.msg
   sensor.msg
   learning_data.msg
+  output_data.msg
 )
 
 # Generate services in the 'srv' folder
@@ -77,7 +78,7 @@ include_directories(
 )
 
 ## Add Python Node
-catkin_install_python(PROGRAMS src/src_python/ecos_filter_node.py 
+catkin_install_python(PROGRAMS src/src_python/ecos_filter_node.py src/src_python/data_logger.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
