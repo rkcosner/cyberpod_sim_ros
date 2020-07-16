@@ -1,47 +1,58 @@
 <?xml version="1.0"?>
 <launch>
+
 	<arg name="teleop" default="joy" />
 	<arg name="filter" default="on"/>
 	<arg name="viz" default="on"/>
 	<arg name="recording" default="off"/>
-	<!--<include file="$(find cyberpod_sim_ros)/launch/manual_teleop.launch" if="$(eval teleop == 'joy')"/>-->
+	<arg name="epsilon"  default="0.0"/>
+	<arg name="C" default="1.0"/>
+
 	<include file="$(find cyberpod_sim_ros)/launch/rviz.launch" if="$(eval viz == 'on')"/> 
 
 	<group ns="cyberpod_sim_ros">
 
 		<node name="integrator" pkg="cyberpod_sim_ros" type="integrator_node" output="screen">
 			<param name="dt" value="0.001" />
-			<param name="umax" value="20.0" />
-			<param name="input_delay_ms" value="10.0"/>
+			<param name="umax" value="200.0" />
+			<param name="input_delay_ms" value="1.0"/>
 			<!--State Vector [x, y, theta_z, xdot, theta_zdot, theta_y, theta_ydot ] --> 
-			<rosparam param="IC">[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]</rosparam>
+			<rosparam param="IC">[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5]</rosparam>
 		</node>
 		
-		<node name="ecos_safety_filter" pkg="cyberpod_sim_ros" type="ecos_filter_node.py" output="screen"/>
+		<node name="ecos_safety_filter" pkg="cyberpod_sim_ros" type="ecos_filter_node.py" output="screen">
+			<param name="filter" value="$(arg filter)" />
+			<param name="epsilon" value="$(arg epsilon)" />
+			<param name="C" value="$(arg C)" />
+			<param name="alpha" value="10" /> <!-- good set: 10, 0.5, 0.1, 5 --> 
+			<param name="L_lfh" value="0.1" />
+			<param name="L_lgh" value="0.5" />
+			<param name="L_ah" value="5" />
+		</node>
+		
+		<node name="data_logger" pkg="cyberpod_sim_ros" type="data_logger.py" output="screen"/>
 
 		<node name="controller" pkg="cyberpod_sim_ros" type="controller_node" output="screen">
 			<param name="offset_angle" value="0.138324423615"/>
 			<rosparam param="gains">[0., 0., 0., 50.8129, 0., 147.1530, 46.8037]</rosparam>
 		</node>
 
+		<!--
 		<node name="image_processor" pkg="cyberpod_sim_ros" type="image_processor_node" output="screen">
 		</node>
-
+		-->
+		 
 		<node pkg="rosbag" type="record" name="rosbag_recorder"
-			args="record -o $(find cyberpod_sim_ros)/bags/recording /cyberpod_sim_ros/learning_data_throttled" output="screen" if="$(eval recording == 'on')"
+			args="record -o $(find cyberpod_sim_ros)/bags/recording /cyberpod_sim_ros/output_data" output="screen" if="$(eval recording == 'on')"
 		/>
-
-		<node name="rosbag_throttler" type="throttle" pkg="topic_tools" args="messages /cyberpod_sim_ros/learning_data 16 /cyberpod_sim_ros/learning_data_throttled"/>
-
+		<!--
+		<node name="rosbag_throttler" type="throttle" pkg="topic_tools" args="messages /cyberpod_sim_ros/output_data 20 /cyberpod_sim_ros/output_data_throttled"/>
+		-->
 
 		<node name="sensor" pkg="cyberpod_sim_ros" type="sensor_node" output="screen">
 			<param name="offset_angle" value="0.138324423615"/>
 		</node>
-		<!--
-		<node name="ekf" pkg="cyberpod_sim_ros" type="ekf_node" output="screen">
-			<param name="offset_angle" value="0.138324423615"/>
-		</node>
-		-->
+
 	</group>
 
 	<group ns="camera1">
