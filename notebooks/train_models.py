@@ -4,13 +4,41 @@ from sklearn.metrics import mean_squared_error
 # (make_scorer, max_error, mean_absolute_error, median_absolute_error)
 import matplotlib.pyplot as plt
 import pickle
+import pandas as pd
+
+def load_processed(filename):
+    try:
+        data_npz = np.load('../data/' + filename.split('.')[0] + '_processed.npz')
+        states = data_npz['states']
+        images = data_npz['images']
+    except IOError: 
+        # reading datafile
+        data = pd.read_csv('../data/' + filename)
+
+        # removing irrelevant entries
+        data = data[data['status']==2]
+        data = data.reset_index(drop=True)
+
+        # converting strings to arrays
+        data['image'] = data['image'].str.replace('[','').str.replace(']','')
+        data['image'] = data['image'].apply(np.fromstring, sep=', ')
+
+        data['stateVec'] = data['stateVec'].str.replace('[','').str.replace(']','')
+        data['stateVec'] = data['stateVec'].apply(np.fromstring, sep=', ')
+
+        # reshaping image data
+        data['image'] = data['image'].apply(np.reshape, newshape=(250,525,3 ))
+        data['image'] = data['image'].apply(lambda x: x.astype(int))
+        
+        states = np.vstack(data['stateVec'])
+        images = np.stack(data['image'])
+        np.savez('../data/' + filename.split('.')[0] + '_processed.npz', states=states, images=images)
+    return states, images
 
 def get_test_train_data(train_data_fn, test_data,
                         greyscale=False, downscale=False):
     # loading training data
-    data = np.load('../data/' + train_data_fn.split('.')[0] + '_processed.npz')
-    states = data['states']
-    images = data['images']
+    states, images = load_processed(train_data_fn)
     if greyscale:
         images = np.dot(images, [0.299, 0.587, 0.114])
     if downscale:
@@ -45,9 +73,9 @@ def get_test_train_data(train_data_fn, test_data,
         Xs = {'test': features[test_inds], 'train': features[train_inds]}
 
     else:
-        data2 = np.load('../data/' + test_data.split('.')[0] + '_processed.npz')
-        labels2 = data2['states'][:,[0,5]]
-        features2 = data2['images'].reshape(data2['images'].shape[0], -1)
+        states2, images2 = load_processed(test_data)
+        labels2 = states2[:,[0,5]]
+        features2 = images2.reshape(images2.shape[0], -1)
 
         ys = {'test': labels2, 'train': labels}
         Xs = {'test': features2, 'train': features}
