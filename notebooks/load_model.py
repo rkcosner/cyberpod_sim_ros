@@ -1,12 +1,18 @@
 import numpy as np
 import sklearn.metrics
+import time
 from sklearn.metrics.pairwise import euclidean_distances
+from train_models import get_filetag
 
+# specifying model setting
 train_data_fn = 'gridded_data.csv'
 test_data = 'uniform'
+greyscale = True
+downscale = 2 #False
 
 # loading model parameters
-data = np.load('../data/coeff_train{}_test{}.npz'.format(train_data_fn, test_data))
+filetag = get_filetag(train_data_fn, test_data, greyscale, downscale)
+data = np.load('../data/coeff{}.npz'.format(filetag))
 coeff = data['coeff'] # n_train by n_target
 gamma = data['gamma'] # scalar parameter for RBF kernel
 Xs_train = data['Xs_train'] # n_train by n_features training data
@@ -31,7 +37,13 @@ state = data['states'][demo_idx]
 image = data['images'][demo_idx]
 
 def predict_from_single_image(image):
+    if greyscale:
+        image = np.dot(image, [0.299, 0.587, 0.114])
+    if downscale:
+        image = image[::downscale, ::downscale]
     # reshape image to be 1 by n_features
     return predict(image.reshape(1, -1))
 
+start = time.time()
 print(predict_from_single_image(image), state)
+print(time.time() - start)
