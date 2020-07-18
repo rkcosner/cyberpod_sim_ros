@@ -21,11 +21,21 @@ class regression_perception:
         self.load_model()
 
     def load_model(self):
+        # model setting
         train_data_fn = 'gridded_data.csv'
         test_data = 'uniform'
+        self.greyscale = True
+        self.downscale = 2
 
+        image_tag = ''
+        if greyscale:
+            image_tag += '_grey'
+        if downscale:
+            image_tag += '_' + str(downscale)
+        filetag = '_train{}_test{}{}'.format(train_data_fn, test_data, image_tag)
+        
         # loading model parameters
-        data = np.load('../data/coeff_train{}_test{}.npz'.format(train_data_fn, test_data))
+        data = np.load('../data/coeff_{}.npz'.format(filetag))
         self.coeff = data['coeff'] # n_train by n_target
         self.gamma = data['gamma'] # scalar parameter for RBF kernel
         self.Xs_train = data['Xs_train'] # n_train by n_features training data
@@ -43,7 +53,13 @@ class regression_perception:
         self.predict(image.reshape(1, -1))
 
     def estimateCallback(self):
-        self.state_predicted = self.predict(self.state_image_.reshape(1, -1))
+        image = self.state_image_
+        if self.greyscale:
+            image = np.dot(image, [0.299, 0.587, 0.114])
+        if self.downscale:
+            image = image[::self.downscale, ::self.downscale]
+        
+        self.state_predicted = self.predict(image.reshape(1, -1))
         self.pub_state_predicted_.publish(self.state_predicted)
 
 
