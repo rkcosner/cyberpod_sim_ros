@@ -42,9 +42,13 @@ void inputCallback(const cyberpod_sim_ros::input::ConstPtr msg)
 		ROS_WARN_THROTTLE(1,"Input is NaN");
 		return;
 	}
-	inputBuffer_.push_back(*msg);
-	inputBuffer_.erase(inputBuffer_.begin());
-	inputCurrent_ = inputBuffer_[inputBuffer_.size()-1-(int)(input_delay_ms_/1000/dt_)];
+	
+	//inputBuffer_.push_back(*msg);
+	//inputBuffer_.erase(inputBuffer_.begin());
+	inputCurrent_ = *msg;//inputBuffer_[inputBuffer_.size()-1-(int)(input_delay_ms_/1000/dt_)];
+	//ROS_INFO("input vector = [%.4f, %.4f]", inputCurrent_.inputVec[0], inputCurrent_.inputVec[1]);
+	//ROS_INFO("state vector = [%.4f, %.4f, %.4f, %.4f, %.4f, %.4f, %.4f] \n\n", stateCurrent_.stateVec[0], stateCurrent_.stateVec[1],  stateCurrent_.stateVec[2],  stateCurrent_.stateVec[3],  stateCurrent_.stateVec[4],  stateCurrent_.stateVec[5],  stateCurrent_.stateVec[6] );
+
 	saturateInPlace(inputCurrent_.inputVec.data(),-umax_,umax_,INPUT_LENGTH);
 }
 
