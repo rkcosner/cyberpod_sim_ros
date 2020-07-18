@@ -26,11 +26,21 @@ class regression_perception:
 
     
     def load_model(self):
+        # model setting
         train_data_fn = 'gridded_data.csv'
         test_data = 'uniform'
+        self.greyscale = True
+        self.downscale = 2
 
+        image_tag = ''
+        if greyscale:
+            image_tag += '_grey'
+        if downscale:
+            image_tag += '_' + str(downscale)
+        filetag = '_train{}_test{}{}'.format(train_data_fn, test_data, image_tag)
+        
         # loading model parameters
-        data = np.load('/home/rkcosner/Documents/Caltech/Research/catkin_ws/src/cyberpod_sim_ros/data/coeff_train{}_test{}.npz'.format(train_data_fn, test_data))
+        data = np.load('../data/coeff_{}.npz'.format(filetag))
         self.coeff = data['coeff'] # n_train by n_target
         self.gamma = data['gamma'] # scalar parameter for RBF kernel
         self.Xs_train = data['Xs_train'] # n_train by n_features training data
@@ -48,11 +58,17 @@ class regression_perception:
         return np.dot(K, self.coeff)
     
     def imageCallback(self, data):
-        # Update with Predictions
         self.state_image_ = self.bridge.imgmsg_to_cv2(data, desired_encoding='passthrough')
-        self.state_image_.reshape(1,-1)
+        self.predict(image.reshape(1, -1))
 
-        prediction = self.predict(self.state_image_.reshape(1, -1))[0]
+        image = self.state_image_
+        if self.greyscale:
+            image = np.dot(image, [0.299, 0.587, 0.114])
+        if self.downscale:
+            image = image[::self.downscale, ::self.downscale]
+        
+
+        prediction = self.predict(image.reshape(1, -1))[0]
         self.state_predicted_.stateVec[0] = prediction[0]
         self.state_predicted_.stateVec[5] = prediction[1]
         
