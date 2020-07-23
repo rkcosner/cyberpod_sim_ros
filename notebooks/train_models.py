@@ -44,8 +44,8 @@ def get_test_train_data(train_data_fn, test_data,
         ys = {'test': labels[test_inds], 'train': labels[train_inds]}
         Xs = {'test': features[test_inds], 'train': features[train_inds]}
     elif test_data is None:
-        ys = {'test': None, 'train': labels}
-        Xs = {'test': None, 'train': features}
+        ys = labels
+        Xs = features
     else:
         data2 = np.load('../data/' + test_data.split('.')[0] + '_processed.npz')
         labels2 = data2['states'][:,[0,5]]
