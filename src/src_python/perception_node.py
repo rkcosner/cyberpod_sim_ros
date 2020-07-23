@@ -10,6 +10,7 @@ from sklearn.metrics.pairwise import euclidean_distances, rbf_kernel
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
 import time
+import rospkg
 
 class regression_perception: 
 
@@ -31,16 +32,17 @@ class regression_perception:
         test_data = 'uniform'
         self.greyscale = True
         self.downscale = 2
-
+        rospack = rospkg.RosPack()
+        
         image_tag = ''
-        if greyscale:
+        if self.greyscale:
             image_tag += '_grey'
-        if downscale:
-            image_tag += '_' + str(downscale)
+        if self.downscale:
+            image_tag += '_' + str(self.downscale)
         filetag = '_train{}_test{}{}'.format(train_data_fn, test_data, image_tag)
         
         # loading model parameters
-        data = np.load('../data/coeff_{}.npz'.format(filetag))
+        data = np.load((rospack.get_path('cyberpod_sim_ros')+ '/data/coeff'+'{}.npz').format(filetag))
         self.coeff = data['coeff'] # n_train by n_target
         self.gamma = data['gamma'] # scalar parameter for RBF kernel
         self.Xs_train = data['Xs_train'] # n_train by n_features training data
@@ -50,16 +52,12 @@ class regression_perception:
         # K = euclidean_distances(Xs, self.Xs_train, squared=True) # fast implementation
         # K *= -self.gamma
         # np.exp(K, K)  # exponentiate K in-place
-        t = time.time()
         K = rbf_kernel(Xs, self.Xs_train, gamma=self.gamma)
         
-        rospy.loginfo("Evaluate Kernel: %4f ", time.time() - t )
-
         return np.dot(K, self.coeff)
     
     def imageCallback(self, data):
         self.state_image_ = self.bridge.imgmsg_to_cv2(data, desired_encoding='passthrough')
-        self.predict(image.reshape(1, -1))
 
         image = self.state_image_
         if self.greyscale:
@@ -69,17 +67,18 @@ class regression_perception:
         
 
         prediction = self.predict(image.reshape(1, -1))[0]
+        self.state_predicted_.stateVec = np.array(self.state_predicted_.stateVec)
+
         self.state_predicted_.stateVec[0] = prediction[0]
         self.state_predicted_.stateVec[5] = prediction[1]
         
         self.pub_state_predicted_.publish(self.state_predicted_)
-        
-        rospy.loginfo(self.state_predicted_.stateVec)
-   
+           
     def otherSensorsCallback(self, data): 
         # Receive Other Measurements
         self.state_predicted_ = data
         self.state_predicted_.stateVec = list(data.stateVec)
+
 def run_perception():
     perception = regression_perception()
 
