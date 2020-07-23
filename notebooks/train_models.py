@@ -1,16 +1,21 @@
 import numpy as np
 from sklearn.kernel_ridge import KernelRidge
-from sklearn.model_selection import GridSearchCV
-from sklearn.metrics import (make_scorer, max_error, mean_squared_error,
-                            mean_absolute_error, median_absolute_error)
+from sklearn.metrics import mean_squared_error
+# (make_scorer, max_error, mean_absolute_error, median_absolute_error)
 import matplotlib.pyplot as plt
 import pickle
 
-def get_test_train_data(train_data_fn, test_data):
+def get_test_train_data(train_data_fn, test_data,
+                        greyscale=False, downscale=False):
     # loading training data
     data = np.load('../data/' + train_data_fn.split('.')[0] + '_processed.npz')
     states = data['states']
     images = data['images']
+    if greyscale:
+        images = np.dot(images, [0.299, 0.587, 0.114])
+    if downscale:
+        # TODO: this is crude, should try method like: https://stackoverflow.com/questions/48121916/numpy-resize-rescale-image
+        images = images[:,::downscale,::downscale]
     features = images.reshape(images.shape[0], -1)
     labels = states[:,[0,5]]
 
@@ -38,7 +43,9 @@ def get_test_train_data(train_data_fn, test_data):
 
         ys = {'test': labels[test_inds], 'train': labels[train_inds]}
         Xs = {'test': features[test_inds], 'train': features[train_inds]}
-
+    elif test_data is None:
+        ys = {'test': None, 'train': labels}
+        Xs = {'test': None, 'train': features}
     else:
         data2 = np.load('../data/' + test_data.split('.')[0] + '_processed.npz')
         labels2 = data2['states'][:,[0,5]]
@@ -49,9 +56,11 @@ def get_test_train_data(train_data_fn, test_data):
 
     return Xs, ys
 
-def main(train_data_fn, test_data, retrain_metric='mean'):
+def main(train_data_fn, test_data, retrain_metric='mean',
+         greyscale=False, downscale=False):
     # loading data
-    Xs, ys = get_test_train_data(train_data_fn, test_data)
+    Xs, ys = get_test_train_data(train_data_fn, test_data,
+                                 greyscale=greyscale, downscale=downscale)
 
     # setting up model
 
@@ -96,15 +105,25 @@ def main(train_data_fn, test_data, retrain_metric='mean'):
     plt.show()
 
     # save results
-    save_obj(res, 'train_res')
+    filetag = get_filetag(train_data_fn, test_data, greyscale, downscale)
+    save_obj(res, 'train_res{}'.format(filetag))
     params, _ = min(res[retrain_metric].items(), key=lambda x: x[1]) 
     reg.set_params(alpha=params[0], gamma=params[1])
     # TODO: refit with test AND train?
     reg.fit(Xs['train'], ys['train'])
-    np.savez('../data/coeff_train{}_test{}'.format(train_data_fn, test_data), 
+    np.savez('../data/coeff{}'.format(filetag), 
              coeff=reg.dual_coef_, alpha=params[0], gamma=params[1],
              Xs_train=Xs['train'],
              y_pred=reg.predict(Xs['train']))
+
+def get_filetag(train_data_fn, test_data, greyscale, downscale):
+    image_tag = ''
+    if greyscale:
+        image_tag += '_grey'
+    if downscale:
+        image_tag += '_' + str(downscale)
+    filetag = '_train{}_test{}{}'.format(train_data_fn, test_data, image_tag)
+    return filetag
 
 def save_obj(obj, name ):
     with open('../data/'+ name + '.pkl', 'wb') as f:
@@ -115,9 +134,18 @@ def load_obj(name ):
         return pickle.load(f)
 
 if __name__ == '__main__':
+    # file containing training data
     train_data_fn = 'gridded_data.csv'
-    # test_data = 'uniform'
-    # test_data = 'test_case_2_no_EKF_var_1.csv'
-    # test_data = 'test_case_2_no_EKF_var_0_1.csv'
-    test_data = [[-1, 1], [-1, -1]]
-    main(train_data_fn, test_data)
+    
+    # strategy for determining test/train split
+    test_data = 'uniform' # 20% of train data uniformly at random
+    # test_data = 'test_case_2_no_EKF_var_0_1.csv' # data from additional file
+    # test_data = [[-1, 1], [-1, -1]] # 20% of train data closest to the listed points
+    
+    # whether or not to greyscale images
+    greyscale = True
+
+    # factor by which to downscale images
+    downscale = 2
+    main(train_data_fn, test_data,
+         greyscale=greyscale, downscale=downscale)
