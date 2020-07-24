@@ -1,13 +1,11 @@
 <?xml version="1.0"?>
 <launch>
 
-	<arg name="teleop" default="joy" />
 	<arg name="filter" default="on"/>
 	<arg name="viz" default="on"/>
 	<arg name="recording" default="off"/>
-	<arg name="epsilon"  default="0.0"/>
-	<arg name="C" default="1.0"/>
-	<arg name="filter_type" default="ellipse"/>
+	<arg name="epsilon"  default="0.2"/>
+	<arg name="c_safety_window" default="0.4"/>
 
 	<include file="$(find cyberpod_sim_ros)/launch/rvizLearning.launch" if="$(eval viz == 'on')"/> 
 
@@ -17,7 +15,7 @@
 			<param name="dt" value="0.001" />
 			<param name="umax" value="200.0" />
 			<param name="input_delay_ms" value="1.0"/>
-			<param name="time_dilation_factor" value="25"/>
+			<param name="time_dilation_factor" value="4"/>
 			<!--State Vector [x, y, theta_z, xdot, theta_zdot, theta_y, theta_ydot ] --> 
 			<rosparam param="IC">[0.5, 0.0, 0.0, -1.0, 0.0, 0.138, 0.0]</rosparam>
 		</node>
@@ -25,13 +23,12 @@
 		<node name="ecos_safety_filter" pkg="cyberpod_sim_ros" type="ecos_filter_node.py" output="screen">
 			<param name="filter" value="$(arg filter)" />
 			<param name="epsilon" value="$(arg epsilon)" />
-			<param name="C" value="$(arg C)" />
+			<param name="c_safety_window" value="$(arg c_safety_window)" />
 			<param name="alpha" value="10" />  
-			<param name="L_lfh" value="18" />
-			<param name="L_lgh" value="0.1" />
-			<param name="L_ah" value="100" />
+			<param name="L_lfh" value="15.99427512538" />
+			<param name="L_lgh" value="0.24338437673585678" />
+			<param name="L_ah" value=" 100.00000000000057" />
 			<param name="alpha_e" value="10"/>
-			<param name="filter_type" value="$(arg filter_type)"/>
 		</node>
 		
 		<node name="data_logger" pkg="cyberpod_sim_ros" type="data_logger.py" output="screen"/>
