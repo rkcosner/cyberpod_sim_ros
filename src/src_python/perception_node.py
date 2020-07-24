@@ -57,23 +57,30 @@ class regression_perception:
         return np.dot(K, self.coeff)
     
     def imageCallback(self, data):
+        #t = time.time()        
         self.state_image_ = self.bridge.imgmsg_to_cv2(data, desired_encoding='passthrough')
+        #rospy.loginfo(time.time() - t)
 
         image = self.state_image_
         if self.greyscale:
             image = np.dot(image, [0.299, 0.587, 0.114])
         if self.downscale:
             image = image[::self.downscale, ::self.downscale]
+        #rospy.loginfo(time.time() - t)
         
-
         prediction = self.predict(image.reshape(1, -1))[0]
+        #rospy.loginfo(time.time() - t)
+
         self.state_predicted_.stateVec = np.array(self.state_predicted_.stateVec)
 
         self.state_predicted_.stateVec[0] = prediction[0]
         self.state_predicted_.stateVec[5] = prediction[1]
-        
+        #rospy.loginfo(time.time() - t)
+
         self.pub_state_predicted_.publish(self.state_predicted_)
-           
+        #rospy.loginfo(1/(time.time() - t))
+
+
     def otherSensorsCallback(self, data): 
         # Receive Other Measurements
         self.state_predicted_ = data
