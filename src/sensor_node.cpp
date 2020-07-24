@@ -10,7 +10,7 @@ ros::Subscriber sub_state_;
 ros::Publisher pub_sensor_;
 ros::Publisher pub_state_measured_; 
 
-double enc_v_variance_,psi_variance_,psi_dot_variance_,theta_dot_variance_;
+double enc_v_variance_,psi_error_,psi_dot_error_,theta_dot_variance_;
 cyberpod_sim_ros::state state_current_;
 double dt_,v_last_,theta_last_;
 double encL_pos_,encR_pos_;
@@ -35,8 +35,8 @@ void stateCallback(const cyberpod_sim_ros::state::ConstPtr msg)
 	// add in random noise
 	encoderL_vel += ( ((double)rand()/(double)RAND_MAX) *2-1)*enc_v_variance_;
 	encoderR_vel += ( ((double)rand()/(double)RAND_MAX) *2-1)*enc_v_variance_;
-	psi += ( ((double)rand()/(double)RAND_MAX) *2-1)*psi_variance_;
-	psiDot += ( ((double)rand()/(double)RAND_MAX) *2-1)*psi_dot_variance_;
+	psi += psi_error_;
+	psiDot += psi_dot_error_;
 	thetaDot += ( ((double)rand()/(double)RAND_MAX) *2-1)*theta_dot_variance_;
 
 	//update encoder positions;
@@ -70,10 +70,10 @@ void stateCallbackNoEKF(const cyberpod_sim_ros::state::ConstPtr msg)
 
 	// add in random noise
 	
-	state_msg.x += ( ((double)rand()/(double)RAND_MAX) *2-1)*enc_v_variance_;\
+	state_msg.x += ( ((double)rand()/(double)RAND_MAX) *2-1)*enc_v_variance_;
 	state_msg.v += ( ((double)rand()/(double)RAND_MAX) *2-1)*enc_v_variance_;
-	state_msg.psi += 0; //( ((double)rand()/(double)RAND_MAX) *2-1)*psi_variance_;
-	state_msg.psiDot += -0.1;//( ((double)rand()/(double)RAND_MAX) *2-1)*psi_dot_variance_;
+	state_msg.psi += psi_error_; //( ((double)rand()/(double)RAND_MAX) *2-1)*psi_variance_;
+	state_msg.psiDot += psi_dot_error_;//( ((double)rand()/(double)RAND_MAX) *2-1)*psi_dot_variance_;
 
 	state_msg.stateVec[0] = state_msg.x; 
 	state_msg.stateVec[3] = state_msg.v;
@@ -101,8 +101,8 @@ int main (int argc, char *argv[])
 	// Retreive params
 	double variance = 0.0; //0.001;
 	nhParams_->param<double>("enc_v_variance",enc_v_variance_, variance);//0.001);
-	nhParams_->param<double>("psi_variance",psi_variance_, variance); //0.001);
-	nhParams_->param<double>("psi_dot_variance",psi_dot_variance_, variance); //0.001);
+	nhParams_->param<double>("psi_error",psi_error_, 0.0); //0.001);
+	nhParams_->param<double>("psi_dot_error",psi_dot_error_, 0.0); //0.001);
 	nhParams_->param<double>("theta_dot_variance",theta_dot_variance_,0.001);
 
 	// Display node info

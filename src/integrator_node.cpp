@@ -12,6 +12,7 @@ ros::Publisher pub_state_;
 double t_;
 double dt_;
 double umax_;
+double time_dilation_factor_; 
 uint32_t iter_;
 STATUS status_;
 stepper_t odeStepper_;
@@ -202,6 +203,7 @@ int main (int argc, char *argv[])
 	nhParams_->param<double>("umax",umax_,20.);
 	nhParams_->param<double>("input_delay_ms",input_delay_ms_,1.);
 	nhParams_->param<state_t>("IC",initialConditions_,initialConditions_);
+	nhParams_->param<double>("time_dilation_factor",time_dilation_factor_, 50);
 
 	if(dt_<=0.0)
 	{
@@ -235,12 +237,13 @@ int main (int argc, char *argv[])
 		inputBuffer_[i].inputVec[0] = 0.;
 		inputBuffer_[i].inputVec[1] = 0.;
 	}
-	ros::Rate rate(1/dt_);
+	ros::Rate rate(1/dt_/time_dilation_factor_); //Change Rate Here
 
 	// Display node info
 	ROS_INFO("Integrator node successfuly started with:");
 	ROS_INFO("___dt=%.4fs",dt_);
 	ROS_INFO("___input_delay_ms=%.4fs",input_delay_ms_);
+	ROS_INFO("___time_dilation_factor=%4f", time_dilation_factor_);
 	ROS_INFO("___IC=");
 	for(uint8_t i = 0; i<STATE_LENGTH; i++)
 	{

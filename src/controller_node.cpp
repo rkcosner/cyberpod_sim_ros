@@ -42,9 +42,6 @@ void computeControlAction(void)
 	input_.inputVec[1] = u;
 }
 
-void imageCallback(const cyberpod_sim_ros::state::ConstPtr msg){
-	// Callback function for receiving state information from images
-}
 
 void controlCallback(const cyberpod_sim_ros::state::ConstPtr msg)
 {
