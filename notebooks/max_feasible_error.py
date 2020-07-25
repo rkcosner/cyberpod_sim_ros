@@ -47,8 +47,13 @@ def get_bd(x):
     fns_above, fns_below = get_fns(x)
     Lgh_above, Lfh_above, ah_above = fns_above
     Lgh_below, Lfh_below, ah_below = fns_below
-    bd_above = max(np.linalg.norm(Lgh_above) / (2*L_Lgh), (Lfh_above + ah_above)/(2*(L_Lfh+L_ah)))
-    bd_below = max(np.linalg.norm(Lgh_below) / (2*L_Lgh), (Lfh_below + ah_below)/(2*(L_Lfh+L_ah)))
+
+    # it seems that we will not be able to satisfy for any u\neq 0, so
+
+    # bd_above = max(np.linalg.norm(Lgh_above) / (2*L_Lgh), (Lfh_above + ah_above)/(2*(L_Lfh+L_ah)))
+    bd_above = (Lfh_above + ah_above)/(2*(L_Lfh+L_ah))
+    # bd_below = max(np.linalg.norm(Lgh_below) / (2*L_Lgh), (Lfh_below + ah_below)/(2*(L_Lfh+L_ah)))
+    bd_below = (Lfh_below + ah_below)/(2*(L_Lfh+L_ah))
     return min(bd_above, bd_below)
 
 def get_gridded_eps(grid_limits=default_grid_limits, selected_inds=[0,5]):
