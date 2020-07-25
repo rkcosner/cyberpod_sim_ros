@@ -11,15 +11,16 @@ L_ah = 100
 alpha = 10
 alpha_e = 10
 C = 0.4
+x5_eq = 0.138
 
 # specifying upper_bd, lower_bd, num_grid
 default_grid_limits = np.array([[-1, 1, 20], # x
-	                        [-6, 6, 20], # xd
+	                        [-1, 1, 20], # xd
 	                        [0, 0, 1],
 	                        [0, 0, 1],
 	                        [0, 0, 1],
-	                        [-1, 1, 20], # theta
-	                        [-6,6, 20]]) # thetad
+	                        [-0.4 +x5_eq, 0.4 + x5_eq, 20], # theta
+	                        [1.5,-1.5, 20]]) # thetad
 
 def get_fns(x):
     
@@ -56,7 +57,7 @@ def get_bd(x):
     bd_below = (Lfh_below + ah_below)/(2*(L_Lfh+L_ah))
     return min(bd_above, bd_below)
 
-def get_gridded_eps(grid_limits=default_grid_limits, selected_inds=[0,5]):
+def get_gridded_eps(grid_limits=default_grid_limits, selected_inds=[6,5]):
 	assert grid_limits.shape[0] == 7
 
 	# computing bound on eps for all of these values
@@ -75,10 +76,16 @@ def get_gridded_eps(grid_limits=default_grid_limits, selected_inds=[0,5]):
 
 if __name__ == '__main__':
 	import matplotlib.pyplot as plt
+
 	colors = get_gridded_eps()
 
 	plt.figure()
-	plt.imshow(colors)
-	# plt.scatter(states[:,0].flatten(), states[:,1].flatten(), c=colors.flatten())
+	xRange = np.linspace(default_grid_limits[5][0], default_grid_limits[5][1], default_grid_limits[5][2])
+	yRange = np.linspace(default_grid_limits[6][0], default_grid_limits[6][1], default_grid_limits[0][2])
+	ax = plt.imshow(colors)
+	plt.xticks(range(20), xRange, rotation=90)
+	plt.yticks(range(20), yRange)
+	plt.xlabel(r'$\theta$')
+	plt.ylabel(r'$\dot{\theta}$')
 	plt.colorbar()
 	plt.show()
