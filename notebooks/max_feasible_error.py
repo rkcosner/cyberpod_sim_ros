@@ -49,13 +49,26 @@ def get_bd(x):
     Lgh_above, Lfh_above, ah_above = fns_above
     Lgh_below, Lfh_below, ah_below = fns_below
 
-    # it seems that we will not be able to satisfy for any u\neq 0, so
 
-    # bd_above = max(np.linalg.norm(Lgh_above) / (2*L_Lgh), (Lfh_above + ah_above)/(2*(L_Lfh+L_ah)))
-    bd_above = (Lfh_above + ah_above)/(2*(L_Lfh+L_ah))
-    # bd_below = max(np.linalg.norm(Lgh_below) / (2*L_Lgh), (Lfh_below + ah_below)/(2*(L_Lfh+L_ah)))
-    bd_below = (Lfh_below + ah_below)/(2*(L_Lfh+L_ah))
-    return min(bd_above, bd_below)
+    # # bd_above = max(np.linalg.norm(Lgh_above) / (2*L_Lgh), (Lfh_above + ah_above)/(2*(L_Lfh+L_ah)))
+    # bd_above = (Lfh_above + ah_above)/(2*(L_Lfh+L_ah))
+    # # bd_below = max(np.linalg.norm(Lgh_below) / (2*L_Lgh), (Lfh_below + ah_below)/(2*(L_Lfh+L_ah)))
+    # bd_below = (Lfh_below + ah_below)/(2*(L_Lfh+L_ah))
+    # min(bd_above, bd_below)
+
+    # newly derived
+    d1 = Lfh_above + ah_above
+    d2 = Lfh_below + ah_below
+    L = (L_Lfh+L_ah)
+    assert np.all(np.isclose(Lgh_above, -Lgh_below))
+    a_abs = np.abs(np.dot(Lgh_above, np.ones_like(Lgh_above)))
+    b = L_Lgh * np.sqrt(2)
+
+
+    m1 = min(d1/L, d2/L)
+    m2 = min(d1/L, a_abs * (d1+d2) / ( b*(d2-d1) + 2*L*a_abs))
+    m3 = min(d2/L, a_abs * (d1+d2) / ( b*(d1-d2) + 2*L*a_abs))
+    return max(m1, m2, m3)
 
 def get_gridded_eps():
     # computing bound on eps for all of these values
@@ -70,8 +83,11 @@ def get_gridded_eps():
         # thetad_y is gridden to depend on theta_y
         # for x6 in (np.linspace(-alpha_e*C,alpha_e*C,grid_limits[6,2])-alpha_e*(x5-x5_eq)):
         # for x6 in (np.linspace(- alpha_e*(C - x5_eq + x5),alpha_e*(C + x5_eq - x5),grid_limits[6,2])):
-        upper = min(1.5, alpha_e*(C + x5_eq - x5))
-        lower = max(-1.5,  - alpha_e*(C - x5_eq + x5))
+        
+        # upper = alpha_e*(C + x5_eq - x5) # min(1.5, alpha_e*(C + x5_eq - x5))
+        # lower = - alpha_e*(C - x5_eq + x5) # max(-1.5,  - alpha_e*(C - x5_eq + x5))
+        upper = 7
+        lower = -7
         for x6 in (np.linspace(lower,upper,grid_limits[6,2])):
             max_over_x3 = []
             for x3 in (np.linspace(*grid_limits[3])):

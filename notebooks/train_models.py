@@ -5,8 +5,12 @@ from sklearn.metrics import mean_squared_error
 import matplotlib.pyplot as plt
 import pickle
 
+theta_eq = 0.138324423615
+SEED = 3
+
 def get_test_train_data(train_data_fn, test_data,
-                        greyscale=False, downscale=False):
+                        greyscale=False, downscale=False,
+                        noise=[0., 0.]):
     # loading training data
     data = np.load('../data/' + train_data_fn.split('.')[0] + '_processed.npz')
     states = data['states']
@@ -18,6 +22,9 @@ def get_test_train_data(train_data_fn, test_data,
         images = images[:,::downscale,::downscale]
     features = images.reshape(images.shape[0], -1)
     labels = states[:,[0,5]]
+    # adding noise
+    np.random.seed(SEED)
+    labels += np.random.uniform(-1, 1, size=labels.shape) * noise
 
     # loading testing data
     if test_data == 'uniform': # random uniform 
@@ -67,7 +74,7 @@ def main(train_data_fn, test_data, retrain_metric='mean',
     # TODO: possibly use alternate regressors
     reg = KernelRidge(kernel='rbf')
     n_features = Xs['train'].shape[1]
-    param_grid = {'alpha': np.linspace(0,1,5),
+    param_grid = {'alpha': np.linspace(0,0.1,5),
                   'gamma': np.logspace(-4,1, 5)/n_features}
     # TODO: additional metrics
     scoring = {'mean': mean_squared_error,}
@@ -101,7 +108,7 @@ def main(train_data_fn, test_data, retrain_metric='mean',
         plt.scatter(ys['train'][:,0], ys['train'][:,1], c=errs)
         errs = np.sum((ys['test']-y_pred['test'][params])**2, axis=1)
         plt.scatter(ys['test'][:,0], ys['test'][:,1], c=errs, marker='s')
-
+        plt.colorbar()
     plt.show()
 
     # save results
@@ -109,12 +116,15 @@ def main(train_data_fn, test_data, retrain_metric='mean',
     save_obj(res, 'train_res{}'.format(filetag))
     params, _ = min(res[retrain_metric].items(), key=lambda x: x[1]) 
     reg.set_params(alpha=params[0], gamma=params[1])
-    # TODO: refit with test AND train?
-    reg.fit(Xs['train'], ys['train'])
+    # refit with test AND train?
+    Xs_train = np.vstack([Xs['train'], Xs['test']])
+    ys_train = np.vstack([ys['train'], ys['test']])
+    reg.fit(Xs_train, 
+            ys_train)
     np.savez('../data/coeff{}'.format(filetag), 
              coeff=reg.dual_coef_, alpha=params[0], gamma=params[1],
-             Xs_train=Xs['train'],
-             y_pred=reg.predict(Xs['train']))
+             Xs_train=Xs_train,
+             y_pred=reg.predict(Xs_train))
 
 def get_filetag(train_data_fn, test_data, greyscale, downscale):
     image_tag = ''
@@ -135,12 +145,16 @@ def load_obj(name ):
 
 if __name__ == '__main__':
     # file containing training data
-    train_data_fn = 'gridded_data.csv'
-    
+    # train_data_fn = 'gridded_data.csv'
+    # train_data_fn = 'gridded2_train.csv'
+    train_data_fn = 'gridded2_sampled.csv'
+
     # strategy for determining test/train split
     test_data = 'uniform' # 20% of train data uniformly at random
     # test_data = 'test_case_2_no_EKF_var_0_1.csv' # data from additional file
-    # test_data = [[-1, 1], [-1, -1]] # 20% of train data closest to the listed points
+    # test_data = [[-1, -0.5], [-1, 0.5],
+    #              [1, -0.5], [1, 0.5],
+    #              [0, 0]] # 20% of train data closest to the listed points in (x, theta)
     
     # whether or not to greyscale images
     greyscale = True
