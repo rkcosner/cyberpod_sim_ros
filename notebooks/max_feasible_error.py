@@ -19,8 +19,8 @@ default_grid_limits = np.array([[0, 0, 1], # x
                         [0, 0, 1], # theta_z
                         [-1, 1, 20], # xd
                         [0, 0, 1], # thetad_z
-                        [-0.5+x5_eq, 0.5+x5_eq, 30], # theta_y
-                        [None, None, 30]]) # thetad_y depends on theta_y
+                        [-0.5+x5_eq, 0.5+x5_eq, 40], # theta_y
+                        [None, None, 40]]) # thetad_y depends on theta_y
 
 
 def get_fns(x):
@@ -84,10 +84,10 @@ def get_gridded_eps():
         # for x6 in (np.linspace(-alpha_e*C,alpha_e*C,grid_limits[6,2])-alpha_e*(x5-x5_eq)):
         # for x6 in (np.linspace(- alpha_e*(C - x5_eq + x5),alpha_e*(C + x5_eq - x5),grid_limits[6,2])):
         
-        # upper = alpha_e*(C + x5_eq - x5) # min(1.5, alpha_e*(C + x5_eq - x5))
-        # lower = - alpha_e*(C - x5_eq + x5) # max(-1.5,  - alpha_e*(C - x5_eq + x5))
-        upper = 7
-        lower = -7
+        upper = min(2.25, alpha_e*(C + x5_eq - x5))
+        lower = max(-1.5,  - alpha_e*(C - x5_eq + x5))
+        # upper = 2.25
+        # lower = -1.5
         for x6 in (np.linspace(lower,upper,grid_limits[6,2])):
             max_over_x3 = []
             for x3 in (np.linspace(*grid_limits[3])):
