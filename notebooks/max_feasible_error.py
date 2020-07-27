@@ -11,21 +11,21 @@ L_ah = 100
 alpha = 10
 alpha_e = 10
 C = 0.4
-x5_eq = 0.138
+x5_eq = 0.138 # 0.138324423615
 
 # specifying upper_bd, lower_bd, num_grid
-default_grid_limits = np.array([[-1, 1, 20], # x
-	                        [-1, 1, 20], # xd
-	                        [0, 0, 1],
-	                        [0, 0, 1],
-	                        [0, 0, 1],
-	                        [-0.4 +x5_eq, 0.4 + x5_eq, 20], # theta
-	                        [1.5,-1.5, 20]]) # thetad
+default_grid_limits = np.array([[0, 0, 1], # x 
+                        [0, 0, 1], # y
+                        [0, 0, 1], # theta_z
+                        [-1, 1, 20], # xd
+                        [0, 0, 1], # thetad_z
+                        [-0.5+x5_eq, 0.5+x5_eq, 30], # theta_y
+                        [None, None, 30]]) # thetad_y depends on theta_y
+
 
 def get_fns(x):
     
     f,g = dynamics(x)
-    x5_eq = 0.138
 
     # previously,
     # todo: should only certain components count?
@@ -57,35 +57,68 @@ def get_bd(x):
     bd_below = (Lfh_below + ah_below)/(2*(L_Lfh+L_ah))
     return min(bd_above, bd_below)
 
-def get_gridded_eps(grid_limits=default_grid_limits, selected_inds=[6,5]):
-	assert grid_limits.shape[0] == 7
+def get_gridded_eps():
+    # computing bound on eps for all of these values
+    eps_vals = []
+    state_vals = []
+    x0 = 0
+    x1 = 0
+    x2 = 0
+    x4 = 0
+    grid_limits = default_grid_limits
+    for x5 in (np.linspace(*grid_limits[5])):
+        # thetad_y is gridden to depend on theta_y
+        # for x6 in (np.linspace(-alpha_e*C,alpha_e*C,grid_limits[6,2])-alpha_e*(x5-x5_eq)):
+        # for x6 in (np.linspace(- alpha_e*(C - x5_eq + x5),alpha_e*(C + x5_eq - x5),grid_limits[6,2])):
+        upper = min(1.5, alpha_e*(C + x5_eq - x5))
+        lower = max(-1.5,  - alpha_e*(C - x5_eq + x5))
+        for x6 in (np.linspace(lower,upper,grid_limits[6,2])):
+            max_over_x3 = []
+            for x3 in (np.linspace(*grid_limits[3])):
+                max_over_x3.append(get_bd(np.array([x0, x1, x2, x3, x4, x5, x6])))
+            eps_vals.append(np.max(max_over_x3))
+            state_vals.append([x5, x6])
+    return np.array(eps_vals), np.array(state_vals)
+    
 
-	# computing bound on eps for all of these values
-	eps_of_x = -np.inf * np.ones(grid_limits[:,2].astype(int))
-	for i0, x0 in enumerate(np.linspace(*grid_limits[0])):
-	    for i1, x1 in enumerate(np.linspace(*grid_limits[1])):
-	        for i2, x2 in enumerate(np.linspace(*grid_limits[2])):
-	            for i3, x3 in enumerate(np.linspace(*grid_limits[3])):
-	                for i4, x4 in enumerate(np.linspace(*grid_limits[4])):
-	                    for i5, x5 in enumerate(np.linspace(*grid_limits[5])):
-	                        for i6, x6 in enumerate(np.linspace(*grid_limits[6])):
-	                            eps_of_x[i0, i1, i2, i3, i4, i5, i6] = get_bd(np.array([x0, x1, x2, x3, x4, x5, x6]))
-	# want to plot only for x, theta
-	axis = tuple(i for i in range(7) if i not in selected_inds)
-	return np.min(eps_of_x, axis=axis)
+def get_gridded_eps_general(grid_limits=default_grid_limits, selected_inds=[6,5]):
+    assert grid_limits.shape[0] == 7
+
+    # computing bound on eps for all of these values
+    eps_of_x = -np.inf * np.ones(grid_limits[:,2].astype(int))
+    for i0, x0 in enumerate(np.linspace(*grid_limits[0])):
+        for i1, x1 in enumerate(np.linspace(*grid_limits[1])):
+            for i2, x2 in enumerate(np.linspace(*grid_limits[2])):
+                for i3, x3 in enumerate(np.linspace(*grid_limits[3])):
+                    for i4, x4 in enumerate(np.linspace(*grid_limits[4])):
+                        for i5, x5 in enumerate(np.linspace(*grid_limits[5])):
+                            # thetad_y is gridden to depend on theta_y
+                            for i6, x6 in enumerate(np.linspace(-alpha_e*C,alpha_e*C,grid_limits[6,2])-alpha_e*(x5-x5_eq)):
+                                eps_of_x[i0, i1, i2, i3, i4, i5, i6] = get_bd(np.array([x0, x1, x2, x3, x4, x5, x6]))
+    # want to plot only for some values
+    axis = tuple(i for i in range(7) if i not in selected_inds)
+
+
+    Xs = []; Ys = []
+    for x5 in np.linspace(*grid_limits[5]):
+        # thetad_y is gridden to depend on theta_y
+        for x6 in (np.linspace(-alpha_e*C,alpha_e*C,grid_limits[6,2])-alpha_e*(x5-x5_eq)):
+            Xs.append(x5); Ys.append(x6)
+
+    return np.min(eps_of_x, axis=axis), (Xs, Ys)
 
 if __name__ == '__main__':
-	import matplotlib.pyplot as plt
+    import matplotlib.pyplot as plt
 
-	colors = get_gridded_eps()
+    colors = get_gridded_eps()
 
-	plt.figure()
-	xRange = np.linspace(default_grid_limits[5][0], default_grid_limits[5][1], default_grid_limits[5][2])
-	yRange = np.linspace(default_grid_limits[6][0], default_grid_limits[6][1], default_grid_limits[0][2])
-	ax = plt.imshow(colors)
-	plt.xticks(range(20), xRange, rotation=90)
-	plt.yticks(range(20), yRange)
-	plt.xlabel(r'$\theta$')
-	plt.ylabel(r'$\dot{\theta}$')
-	plt.colorbar()
-	plt.show()
+    plt.figure()
+    xRange = np.linspace(default_grid_limits[5][0], default_grid_limits[5][1], default_grid_limits[5][2])
+    yRange = np.linspace(default_grid_limits[6][0], default_grid_limits[6][1], default_grid_limits[0][2])
+    ax = plt.imshow(colors)
+    plt.xticks(range(20), xRange, rotation=90)
+    plt.yticks(range(20), yRange)
+    plt.xlabel(r'$\theta$')
+    plt.ylabel(r'$\dot{\theta}$')
+    plt.colorbar()
+    plt.show()
