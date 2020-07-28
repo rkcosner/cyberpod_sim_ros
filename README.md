@@ -1,6 +1,6 @@
 # cyberpod_sim_ros
 
-To install and run this package, you'll need the "ASIF++" and "OSQP_embedded" packages from the lab's bitbucket installed on your computer. Additionally, clone the rviz_camera_stream repo (https://github.com/lucasw/rviz_camera_stream.git) and the rviz_lighting repo (https://github.com/mogumbo/rviz_lighting.git) into the src file of your catkin workspace.
+To install and run this package, you'll need the "ASIF++" and "OSQP_embedded" packages from AMBER Lab's bitbucket installed on your computer. Additionally, clone the rviz_camera_stream repo (https://github.com/lucasw/rviz_camera_stream.git) and the rviz_lighting repo (https://github.com/mogumbo/rviz_lighting.git) into the src file of your catkin workspace.
 
 ## Install OSQP_embedded 
 *clone from bitbucket*
