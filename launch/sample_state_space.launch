@@ -3,7 +3,7 @@
 	<arg name="teleop" default="joy" />
 	<arg name="filter" default="on"/>
 	<arg name="viz" default="on"/>
-	<arg name="recording" default="off"/>
+	<arg name="recording" default="on"/>
 	<include file="$(find cyberpod_sim_ros)/launch/rviz.launch" if="$(eval viz == 'on')"/> 
 
 	<group ns="cyberpod_sim_ros">
@@ -14,10 +14,10 @@
 		</node>
 
 		<node pkg="rosbag" type="record" name="rosbag_recorder"
-			args="record -o $(find cyberpod_sim_ros)/bags/recording /cyberpod_sim_ros/learning_data_throttled" output="screen" if="$(eval recording == 'on')"
+			args="record -o $(find cyberpod_sim_ros)/bags /cyberpod_sim_ros/learning_data_throttled" output="screen" if="$(eval recording == 'on')"
 		/>
 
-		<node name="rosbag_throttler" type="throttle" pkg="topic_tools" args="messages /cyberpod_sim_ros/learning_data 20 /cyberpod_sim_ros/learning_data_throttled"/>
+		<node name="rosbag_throttler" type="throttle" pkg="topic_tools" args="messages /cyberpod_sim_ros/learning_data 11 /cyberpod_sim_ros/learning_data_throttled"/>
 
 	</group>
 
