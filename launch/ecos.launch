@@ -6,6 +6,8 @@
 	<arg name="recording" default="off"/>
 	<arg name="epsilon"  default="0.2"/>
 	<arg name="c_safety_window" default="0.4"/>
+	<arg name="theta_error" default="0.2"/>
+	<arg name="theta_dot_error" default="0.0"/>
 
 	<include file="$(find cyberpod_sim_ros)/launch/rviz.launch" if="$(eval viz == 'on')"/> 
 
@@ -17,7 +19,7 @@
 			<param name="input_delay_ms" value="1.0"/>
 			<param name="time_dilation_factor" value="1"/>
 			<!--State Vector [x, y, theta_z, xdot, theta_zdot, theta_y, theta_ydot ] --> 
-			<rosparam param="IC">[0.5, 0.0, 0.0, -1.0, 0.0, 0.138, 0.0]</rosparam>
+			<rosparam param="IC">[0.0, 0.0, 0.0, 0.0, 0.0, 0.138324423615, 0.0]</rosparam>
 		</node>
 		
 		<node name="ecos_safety_filter" pkg="cyberpod_sim_ros" type="ecos_filter_node.py" output="screen">
@@ -37,23 +39,16 @@
 			<param name="offset_angle" value="0.138324423615"/>
 			<rosparam param="gains">[0., 0., 0., 12.8129, 0., 37.1530, 12.8037]</rosparam>
 		</node>
-
-		<!--
-		<node name="image_processor" pkg="cyberpod_sim_ros" type="image_processor_node" output="screen">
-		</node>
-		-->
 		 
 		<node pkg="rosbag" type="record" name="rosbag_recorder"
 			args="record -o $(find cyberpod_sim_ros)/bags/recording /cyberpod_sim_ros/output_data" output="screen" if="$(eval recording == 'on')"
 		/>
-		<!--
-		<node name="rosbag_throttler" type="throttle" pkg="topic_tools" args="messages /cyberpod_sim_ros/output_data 20 /cyberpod_sim_ros/output_data_throttled"/>
-		-->
+
 
 		<node name="sensor" pkg="cyberpod_sim_ros" type="sensor_node" output="screen">
 			<param name="offset_angle" value="0.138324423615"/>
-			<param name="psi_error" value="-0.2"/>
-			<param name="psi_dot_error" value="0.0"/>
+			<param name="theta_error" value="$(arg theta_error)"/>
+			<param name="theta_dot_error" value="$(arg theta_dot_error)"/>
 		</node>
 
 	</group>
