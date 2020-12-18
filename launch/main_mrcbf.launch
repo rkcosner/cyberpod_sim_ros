@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<launch>
+
+	<arg name="filter" default="on"/>
+	<arg name="viz" default="on"/>
+	<arg name="recording" default="off"/>
+	<arg name="epsilon"  default="0.0"/>
+	<arg name="c_safety_window" default="0.4"/>
+	<arg name="theta_error" default="0.0"/>
+	<arg name="theta_dot_error" default="0.0"/>
+
+	<include file="$(find cyberpod_sim_ros)/launch/rvizObstacle.launch" if="$(eval viz == 'on')"/> 
+	<node name="obstacle_marker" pkg="cyberpod_sim_ros" type="obstacle.py" output="screen"/>
+
+	<group ns="cyberpod_sim_ros">
+
+		<node name="integrator" pkg="cyberpod_sim_ros" type="integrator_node" output="screen">
+			<param name="dt" value="0.001" />
+			<param name="umax" value="200.0" />
+			<param name="input_delay_ms" value="1.0"/>
+			<param name="time_dilation_factor" value="1"/>
+			<!--State Vector [x, y, theta_z, v, theta_zdot, theta_y, theta_ydot ] --> 
+			<rosparam param="IC">[0.0, 0.0, 0.0, 0.0, 0.0, 0.2 , 0.0]</rosparam>
+		</node>
+		
+		<node name="mrop_filter" pkg="cyberpod_sim_ros" type="mrcbf_wall.py" output="screen">
+			<param name="filter" value="$(arg filter)" />
+			<param name="epsilon" value="$(arg epsilon)" />
+			<param name="c_safety_window" value="$(arg c_safety_window)" />
+			<param name="alpha" value="2" />  
+			<param name="L_lfh" value="15.99427512538" />
+			<param name="L_lgh" value="0.24338437673585678" />
+			<param name="L_ah" value=" 100.00000000000057" />
+			<param name="alpha_e" value="10"/>
+			<param name="D" value="2"/>
+			<param name="slack" value="0"/>
+		</node>
+		
+		<node name="controller" pkg="cyberpod_sim_ros" type="controller_node" output="screen">
+			<param name="offset_angle" value="0.2 "/>
+			<!-- equilibrium offset angle = 0.138324423615 -->
+			<rosparam param="gains">[0., 0., 0., 12.8129, 0., 37.1530, 12.8037]</rosparam>
+		</node>
+		 
+		<node pkg="rosbag" type="record" name="rosbag_recorder"
+			args="record -o $(find cyberpod_sim_ros)/bags/recording /cyberpod_sim_ros/output_data" output="screen" if="$(eval recording == 'on')"
+		/>
+
+
+		<node name="sensor" pkg="cyberpod_sim_ros" type="sensor_node" output="screen">
+			<param name="offset_angle" value="0.3"/>
+			<param name="theta_error" value="$(arg theta_error)"/>
+			<param name="theta_dot_error" value="$(arg theta_dot_error)"/>
+		</node>
+
+	</group>
+
+
+
+
+
+</launch>
