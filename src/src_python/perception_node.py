@@ -2,15 +2,17 @@
 # license removed for brevity
 
 import rospy 
-from cyberpod_sim_ros.msg import * 
 import numpy as np
 import scipy as sp 
 import sklearn.metrics
 from sklearn.metrics.pairwise import euclidean_distances, rbf_kernel
-from cv_bridge import CvBridge
-from sensor_msgs.msg import Image
-import time
 import rospkg
+from cv_bridge import CvBridge
+
+from cyberpod_sim_ros.msg import * 
+from sensor_msgs.msg import Image
+
+
 
 class regression_perception: 
 
@@ -23,12 +25,16 @@ class regression_perception:
         self.sub_state_true_      = rospy.Subscriber('/cyberpod_sim_ros/state_true', state, self.otherSensorsCallback)
         self.pub_state_predicted_ = rospy.Publisher('state_measured', state, queue_size=1) 
         self.bridge = CvBridge()
+        rospy.loginfo("Perception node succesfully started with:")
         self.load_model()
-
     
     def load_model(self):
         # model setting
-        train_data_fn = 'gridded_data.csv'
+<<<<<<< HEAD
+        train_data_fn = 'gridded2_sampled.csv'
+=======
+        train_data_fn = 'gridded2noise_sampled.csv'
+>>>>>>> 62653d16e6a1c503baf06f2756b058c7414c8868
         test_data = 'uniform'
         self.greyscale = True
         self.downscale = 2
@@ -40,7 +46,8 @@ class regression_perception:
         if self.downscale:
             image_tag += '_' + str(self.downscale)
         filetag = '_train{}_test{}{}'.format(train_data_fn, test_data, image_tag)
-        
+        rospy.loginfo("___Learing from:" + (rospack.get_path('cyberpod_sim_ros')+ '/data/coeff'+'{}.npz').format(filetag))
+
         # loading model parameters
         data = np.load((rospack.get_path('cyberpod_sim_ros')+ '/data/coeff'+'{}.npz').format(filetag))
         self.coeff = data['coeff'] # n_train by n_target
@@ -57,28 +64,23 @@ class regression_perception:
         return np.dot(K, self.coeff)
     
     def imageCallback(self, data):
-        #t = time.time()        
+
         self.state_image_ = self.bridge.imgmsg_to_cv2(data, desired_encoding='passthrough')
-        #rospy.loginfo(time.time() - t)
 
         image = self.state_image_
         if self.greyscale:
             image = np.dot(image, [0.299, 0.587, 0.114])
         if self.downscale:
             image = image[::self.downscale, ::self.downscale]
-        #rospy.loginfo(time.time() - t)
         
         prediction = self.predict(image.reshape(1, -1))[0]
-        #rospy.loginfo(time.time() - t)
 
         self.state_predicted_.stateVec = np.array(self.state_predicted_.stateVec)
 
         self.state_predicted_.stateVec[0] = prediction[0]
         self.state_predicted_.stateVec[5] = prediction[1]
-        #rospy.loginfo(time.time() - t)
 
         self.pub_state_predicted_.publish(self.state_predicted_)
-        #rospy.loginfo(1/(time.time() - t))
 
 
     def otherSensorsCallback(self, data): 
@@ -87,11 +89,12 @@ class regression_perception:
         self.state_predicted_.stateVec = list(data.stateVec)
 
 def run_perception():
-    perception = regression_perception()
 
 
     rospy.init_node('perception', anonymous=True)
     rate = rospy.Rate(10)
+    perception = regression_perception()
+
 
     while not rospy.is_shutdown(): 
         rate.sleep()
