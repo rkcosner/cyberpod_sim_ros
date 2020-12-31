@@ -22,7 +22,7 @@
 			<rosparam param="IC">[0.0, 0.0, 0.0, 0.0, 0.0, 0.138324423615, 0.0]</rosparam>
 		</node>
 		
-		<node name="ecos_safety_filter" pkg="cyberpod_sim_ros" type="ecos_filter_node.py" output="screen">
+		<node name="mrcbf_safety_filter" pkg="cyberpod_sim_ros" type="mrcbf_filter_node.py" output="screen">
 			<param name="filter" value="$(arg filter)" />
 			<param name="epsilon" value="$(arg epsilon)" />
 			<param name="c_safety_window" value="$(arg c_safety_window)" />
