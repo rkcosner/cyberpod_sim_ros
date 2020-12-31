@@ -5,7 +5,6 @@ using namespace Eigen;
 ros::NodeHandle *nh_;
 ros::NodeHandle *nhParams_;
 ros::Subscriber sub_state_measured_;
-ros::Subscriber sub_state_image_;
 ros::Subscriber sub_cmd_;
 ros::Publisher pub_input_;
 
@@ -73,7 +72,6 @@ int main (int argc, char *argv[])
 	cmdCurrent_.cmd.resize(2,0.0);
 
 	// Init pubs, subs and srvs
-	sub_state_image_ = nh_->subscribe<cyberpod_sim_ros::state>("state_image", 1, imageCallback);
 	sub_state_measured_ = nh_->subscribe<cyberpod_sim_ros::state>("state_measured", 1, controlCallback);
 	sub_cmd_ = nh_->subscribe<cyberpod_sim_ros::cmd>("cmd", 1, cmdCallback);
 	pub_input_ = nh_->advertise<cyberpod_sim_ros::input>("inputDes", 1);
