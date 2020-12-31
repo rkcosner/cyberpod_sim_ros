@@ -84,11 +84,9 @@ catkin_install_python(PROGRAMS src/src_python/ecos_filter_node.py src/src_python
 
 add_executable(integrator_node src/integrator_node.cpp)
 add_executable(controller_node src/controller_node.cpp)
-add_executable(safety_filter_node src/safety_filter_node.cpp)
 add_executable(manual_teleop_node src/manual_teleop_node.cpp src/keyboard.cpp)
 add_executable(converter_node src/converter_node.cpp)
 add_executable(sensor_node src/sensor_node.cpp)
-add_executable(ekf_node src/ekf_node.cpp src/ekf.cpp)
 add_executable(image_processor_node src/image_processor_node.cpp)
 add_executable(grid_state_space_node src/grid_state_space_node.cpp)
 
@@ -96,11 +94,9 @@ add_executable(grid_state_space_node src/grid_state_space_node.cpp)
 # Ensure messages built first
 add_dependencies(integrator_node cyberpod_sim_ros_generate_messages_cpp)
 add_dependencies(controller_node cyberpod_sim_ros_generate_messages_cpp)
-add_dependencies(safety_filter_node cyberpod_sim_ros_generate_messages_cpp)
 add_dependencies(manual_teleop_node cyberpod_sim_ros_generate_messages_cpp)
 add_dependencies(converter_node cyberpod_sim_ros_generate_messages_cpp)
 add_dependencies(sensor_node cyberpod_sim_ros_generate_messages_cpp)
-add_dependencies(ekf_node cyberpod_sim_ros_generate_messages_cpp)
 add_dependencies(image_processor_node cyberpod_sim_ros_generate_messages_cpp)
 add_dependencies(grid_state_space_node cyberpod_sim_ros_generate_messages_cpp)
 
@@ -114,12 +110,6 @@ target_link_libraries(controller_node
                       Eigen3::Eigen
 )
 
-target_link_libraries(safety_filter_node
-                      ${catkin_LIBRARIES}
-                      Eigen3::Eigen
-                       asif++::asif++
-                       asif++::libaffa
-)
 
 target_link_libraries(manual_teleop_node
                       ${catkin_LIBRARIES}
@@ -136,10 +126,6 @@ target_link_libraries(sensor_node
                       ${catkin_LIBRARIES}
 )
 
-target_link_libraries(ekf_node
-                      ${catkin_LIBRARIES}
-                      Eigen3::Eigen
-)
 
 target_link_libraries(image_processor_node
                       ${catkin_LIBRARIES}
