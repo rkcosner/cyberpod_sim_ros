@@ -28,7 +28,6 @@ find_package(catkin REQUIRED COMPONENTS
 ## System dependencies are found with CMake's conventions
 find_package(Boost REQUIRED)
 find_package(Eigen3 3.3 REQUIRED CONFIG)
-find_package(asif++ REQUIRED CONFIG)
 find_package(Threads REQUIRED)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 
@@ -78,7 +77,7 @@ include_directories(
 )
 
 ## Add Python Node
-catkin_install_python(PROGRAMS src/src_python/ecos_filter_node.py src/src_python/data_logger.py
+catkin_install_python(PROGRAMS src/src_python/mrcbf_filter_node.py src/src_python/data_logger.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
