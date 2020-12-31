@@ -18,14 +18,14 @@ class measurementRobustFilter:
         self.state_measured_ = state()
 
         # Retrieve Parameters
-        self.filter_status_ = rospy.get_param("/cyberpod_sim_ros/ecos_safety_filter/filter")
-        self.epsilon_ = float(rospy.get_param("/cyberpod_sim_ros/ecos_safety_filter/epsilon"))
-        self.c_ =  float(rospy.get_param("/cyberpod_sim_ros/ecos_safety_filter/c_safety_window"))
-        self.alpha_ = rospy.get_param("/cyberpod_sim_ros/ecos_safety_filter/alpha") 
-        self.L_lgh_ = rospy.get_param("/cyberpod_sim_ros/ecos_safety_filter/L_lgh") 
-        self.L_lfh_ = rospy.get_param("/cyberpod_sim_ros/ecos_safety_filter/L_lfh") 
-        self.L_ah_  = rospy.get_param("/cyberpod_sim_ros/ecos_safety_filter/L_ah") 
-        self.alpha_e_ = rospy.get_param("/cyberpod_sim_ros/ecos_safety_filter/alpha_e")
+        self.filter_status_ = rospy.get_param("/cyberpod_sim_ros/mrcbf_safety_filter/filter")
+        self.epsilon_ = float(rospy.get_param("/cyberpod_sim_ros/mrcbf_safety_filter/epsilon"))
+        self.c_ =  float(rospy.get_param("/cyberpod_sim_ros/mrcbf_safety_filter/c_safety_window"))
+        self.alpha_ = rospy.get_param("/cyberpod_sim_ros/mrcbf_safety_filter/alpha") 
+        self.L_lgh_ = rospy.get_param("/cyberpod_sim_ros/mrcbf_safety_filter/L_lgh") 
+        self.L_lfh_ = rospy.get_param("/cyberpod_sim_ros/mrcbf_safety_filter/L_lfh") 
+        self.L_ah_  = rospy.get_param("/cyberpod_sim_ros/mrcbf_safety_filter/L_ah") 
+        self.alpha_e_ = rospy.get_param("/cyberpod_sim_ros/mrcbf_safety_filter/alpha_e")
         
         # Display Parameters
         rospy.loginfo("Filter node successfully started with:")
@@ -130,7 +130,7 @@ class measurementRobustFilter:
 
 if __name__ == "__main__": 
     try: 
-        rospy.init_node('ecos_safety_filter', anonymous=True)
+        rospy.init_node('mrcbf_safety_filter', anonymous=True)
         safety_filter = measurementRobustFilter()
         rospy.spin()
     except rospy.ROSInterruptException: 
