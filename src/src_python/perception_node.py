@@ -30,11 +30,8 @@ class regression_perception:
     
     def load_model(self):
         # model setting
-<<<<<<< HEAD
+
         train_data_fn = 'gridded2_sampled.csv'
-=======
-        train_data_fn = 'gridded2noise_sampled.csv'
->>>>>>> 62653d16e6a1c503baf06f2756b058c7414c8868
         test_data = 'uniform'
         self.greyscale = True
         self.downscale = 2
