@@ -7,7 +7,7 @@
 	<arg name="epsilon"  default="0.2"/>
 	<arg name="c_safety_window" default="0.4"/>
 
-	<include file="$(find cyberpod_sim_ros)/launch/rvizLearning.launch" if="$(eval viz == 'on')"/> 
+	<include file="$(find cyberpod_sim_ros)/launch/rviz.launch" if="$(eval viz == 'on')"/> 
 
 	<group ns="cyberpod_sim_ros">
 
@@ -45,9 +45,6 @@
 		<node pkg="rosbag" type="record" name="rosbag_recorder"
 			args="record -o $(find cyberpod_sim_ros)/bags/recording /cyberpod_sim_ros/output_data" output="screen" if="$(eval recording == 'on')"
 		/>
-		<!--
-		<node name="rosbag_throttler" type="throttle" pkg="topic_tools" args="messages /cyberpod_sim_ros/output_data 20 /cyberpod_sim_ros/output_data_throttled"/>
-		-->
 
 	</group>
 
