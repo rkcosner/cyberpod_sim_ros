@@ -10,7 +10,7 @@ SEED = 3
 
 def get_test_train_data(train_data_fn, test_data,
                         greyscale=False, downscale=False,
-                        noise=[0., 0.]):
+                        noise=[0.1, 0.1]):
     # loading training data
     data = np.load('../data/' + train_data_fn.split('.')[0] + '_processed.npz')
     states = data['states']
@@ -24,7 +24,7 @@ def get_test_train_data(train_data_fn, test_data,
     labels = states[:,[0,5]]
     # adding noise
     np.random.seed(SEED)
-    labels += np.random.uniform(-1, 1, size=labels.shape) * noise
+    labels += np.random.normal(size=labels.shape) * noise
 
     # loading testing data
     if test_data == 'uniform': # random uniform 
@@ -146,8 +146,8 @@ def load_obj(name ):
 if __name__ == '__main__':
     # file containing training data
     # train_data_fn = 'gridded_data.csv'
-    # train_data_fn = 'gridded2_train.csv'
-    train_data_fn = 'gridded2_sampled.csv'
+    train_data_fn = 'gridded2_train.csv'
+    # train_data_fn = 'gridded2_sampled.csv'
 
     # strategy for determining test/train split
     test_data = 'uniform' # 20% of train data uniformly at random
