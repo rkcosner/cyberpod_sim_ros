@@ -1,9 +1,15 @@
 # cyberpod_sim_ros
 
-The majority of this code was original written by Andrew Singleterry. Adjustments were made by Ryan Cosner and Sarah Dean for use in producing the experimental results for their CoRL 2020 submission titled "Guaranteeing Safety of Learned Perception Modulesvia Measurement-Robust Control Barrier Functions" [arxiv link](https://arxiv.org/pdf/2010.16001.pdf).
+The majority of this code was original written by Andrew Singleterry. Adjustments were made by Ryan Cosner and Sarah Dean for use in producing the experimental results for their CoRL 2020 paper: "Guaranteeing Safety of Learned Perception Modulesvia Measurement-Robust Control Barrier Functions" ([Arxiv link](https://arxiv.org/pdf/2010.16001.pdf)).
 
-To install and run this package, you'll need to clone the [**rviz_camera_stream**](https://github.com/lucasw/rviz_camera_stream.git) repo and the [**rviz_lighting**](https://github.com/mogumbo/rviz_lighting.git) repo into the src file of your catkin workspace. You'll also need the Python [**ECOS**](https://github.com/embotech/ecos-python) package which can be installed via: 
-> 'pip install ecos'
+To install and run this package, you'll need a working ROS environment. This repo was tested using Ubuntu 18.04 and Ros Melodic. 
+
+Clone the vision packages into your catkin_workspace's src file: 
+* [**rviz_camera_stream**](https://github.com/lucasw/rviz_camera_stream.git) Rviz plugin that publishes camera streams
+* [**rviz_lighting**](https://github.com/mogumbo/rviz_lighting.git) Rviz plugin that provides ambient lighting
+
+ You'll also need the Python [**ECOS**](https://github.com/embotech/ecos-python) package which can be installed via: 
+> pip install ecos
 
 <!--
 ## Install OSQP_embedded 
@@ -29,13 +35,21 @@ sudo make install
 <!--
 * go to top level of catkin workspace
 * 'catkin_make' whenever code changes -->
-* *cd catkin_workspace* go to the top level of the catkin workspace
-* *source devel/setup.bash*
-* *roslaunch cyberpod_sim_ros ecos.launch*
-* open a new terminal 
-* *source devel/setup.bash* in the new terminal 
-* start the simulation using the command: *rosservice call /cyberpod_sim_ros/integrator/ui "cmd: 1 
-data:-0"*
+Navigate to your catkin_workspace
+>cd catkin_workspace 
+
+Make the workspace
+>catkin_make
+
+Source the setup file (this must be done in every new terminal)
+> source devel/setup.bash
+
+Adjust the epsilon value and launch the main script
+> roslaunch cyberpod_sim_ros main_mrcbf.launch epsilon:=0.0
+
+Open a new terminal, source the setup file and run the rosservice command to start the simulation:
+>rosservice call /cyberpod_sim_ros/integrator/ui "cmd: 1 
+data:-0"
   * The commands values are: 0 stops, 1 starts, 4 resets
 
 ## Recordings
@@ -45,8 +59,9 @@ Recordings will appear in the */bags* folder in the repo and in that folder is a
 * cyberpod_sim_ros/
     * include/ 
         * dynamics.hpp
-*   launch/ 
-    * ecos.launch 
+    *   launch/ 
+        * main_mrcbf.launch 
+        * mrcbf_with_learning.launch
         * sample_state_space.launch
     * msg/ 
         * cmd.msg 
@@ -70,12 +85,12 @@ Recordings will appear in the */bags* folder in the repo and in that folder is a
 
 
 
-
-
-
 ## Key Features of Main Simulation: 
-***ecos.launch*** 
+***main_marcbf.launch*** 
     launches the main simulation 
+
+***mrcbf_with_learning.launch***
+    launches the simulation with learning in the loop (this requires learning data which can be generated using the notebooks). The data couldn't be uploaded due to size. Please contact the Ryan if you would like a copy of the data. 
 
 ***dynamics.hpp*** 
     the dynamics for the cyberpod as derived from the Euler-Lagrange equations
@@ -98,7 +113,7 @@ Recordings will appear in the */bags* folder in the repo and in that folder is a
     * receives state values from integrator node state estimates from perception_node and outputs "measured states" with true state values used whenever they cannot be attained from the image, such as velocity. 
 * controller_node.cpp
     * receives state estimates and output desired input based on PD feedback gains
-* ecos_filter_node.py 
+* mrcbf_filter_node.py 
     * receives state estimates and desired input and outputs minimally adjusted input to guarantee safety 
 
 
@@ -107,44 +122,6 @@ Recordings will appear in the */bags* folder in the repo and in that folder is a
     * launch data collection procedure
 * grid_state_space_node.cpp
     * iterates through a gridding of the state space 
-
-=======
-*go to top level of catkin workspace*
-catkin_make *whenever code changes*
-source devel/setup.bash *in every new terminal*
-roslaunch cyberpod_sim_ros ecos.launch
-
-*in new terminal*
-rosservice call /cyberpod_sim_ros/integrator/ui "cmd: 1 
-data:-0" *cmd: 0 stops, 1 starts, 4 resets*
-
-## Recordings
-Recordings will appear in the /bags folder in the repo and in that folder is another readme for how to format the data.
-
-## Relevant Portions of the Code 
-cyberpod_sim_ros/
-    include/ 
-        dynamics.hpp
-    launch/ 
-        ecos.launch 
-        sample_state_space.launch
-    msg/ 
-        cmd.msg 
-        input.mcg
-        learning_data.msg
-        state.msg
-    src/
-        integrator_node.cpp
-        grid_state_space_node.cpp
-        sensor_node.cpp
-        controller_node.cpp
-        src_python/
-            data_logger.py
-            ecos_fitler_node.py
-            perception_node.py 
-    srv/
-        ui.srv
-    URDF/
 
 
 
